@@ -36,6 +36,10 @@ npm run web
 npm run typecheck
 ```
 
+### 用 Expo Go 在 iPhone 预览
+
+在 iPhone 安装 Expo Go 后，于项目根目录执行 `npm start`，再用 Expo Go 扫描终端显示的二维码即可预览。手机和电脑应连接同一网络；若无法连接，可执行 `npx expo start --tunnel` 后重新扫码。
+
 ## 计时规则
 
 Timeflow 在任务状态变化时以时间戳结算上一段时间，而不是将 `setInterval` 作为计时数据来源。因此应用切到后台、锁屏或重新打开后，计时仍可根据上次状态恢复。
