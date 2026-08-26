@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "时流 Timeflow",
+    "slug": "timeflow",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "timeflow",
+    "icon": "./assets/app-icon.png",
+    "plugins": [
+      "expo-router",
+      ["expo-image-picker", { "photosPermission": "允许时流访问你的相册，以便选择分类图标。", "microphonePermission": false }]
+    ],
+    "ios": { "supportsTablet": false, "bundleIdentifier": "com.timeflow.app" },
+    "android": { "package": "com.timeflow.app" }
+  }
+}

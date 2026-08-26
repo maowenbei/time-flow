@@ -1,0 +1,29 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useRef } from 'react';
+import { Animated, PanResponder, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Task, liveTask, useTimer } from '../state/TimerContext';
+import { fullTime, shortTime } from '../utils/time';
+import { TaskTagIcon } from './TaskTagIcon';
+
+const DELETE_WIDTH = 78;
+
+export function TaskCard({ task, onLongPress }: { task: Task; onLongPress?: () => void }) {
+  const timer = useTimer(); const live = liveTask(task, timer, timer.now); const isRunning = task.status === 'running';
+  const translateX = useRef(new Animated.Value(0)).current;
+  const close = () => Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+  const panResponder = useRef(PanResponder.create({
+    onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 7 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
+    onPanResponderMove: (_, gesture) => translateX.setValue(Math.max(-DELETE_WIDTH, Math.min(0, gesture.dx))),
+    onPanResponderRelease: (_, gesture) => Animated.spring(translateX, { toValue: gesture.dx < -42 ? -DELETE_WIDTH : 0, useNativeDriver: true }).start(),
+    onPanResponderTerminate: close,
+  })).current;
+  let content: React.ReactNode;
+  if (task.status === 'completed') content = <Pressable onLongPress={onLongPress} delayLongPress={450} style={styles.completed}><TaskTagIcon tagId={task.tagId} size={27} /><Ionicons name="checkmark-circle" size={16} color="#86AAA0" /><Text style={styles.completedTitle}>{task.title}</Text><Text style={styles.completedTime}>{shortTime(live.allocatedDuration)}</Text><Pressable onPress={() => timer.restart(task.id)} hitSlop={8} style={styles.restart}><Ionicons name="refresh" size={15} color="#1F7A70" /><Text style={styles.restartText}>重启</Text></Pressable></Pressable>;
+  else if (!isRunning) content = <Pressable onLongPress={onLongPress} delayLongPress={450} style={styles.pending}><TaskTagIcon tagId={task.tagId} size={31} /><Text style={styles.pendingTitle}>{task.title}</Text><Pressable onPress={() => timer.start(task.id)} hitSlop={8} style={styles.start} accessibilityLabel={`${task.status === 'paused' ? '继续' : '开始'}${task.title}`}><Ionicons name="play" size={12} color="#1F7A70" /><Text style={styles.startText}>{task.status === 'paused' ? '继续' : '开始'}</Text></Pressable></Pressable>;
+  else content = <Pressable onLongPress={onLongPress} delayLongPress={450} style={styles.running}><View style={styles.heading}><TaskTagIcon tagId={task.tagId} size={32} /><View style={styles.pulse} /><Text style={styles.runningTitle}>{task.title}</Text></View><View style={styles.times}><View><Text style={styles.caption}>运行时间</Text><Text style={styles.elapsed}>{fullTime(live.elapsedDuration)}</Text></View><View style={styles.actual}><Text style={styles.caption}>实际投入</Text><Text style={styles.allocated}>{fullTime(live.allocatedDuration)}</Text></View></View><View style={styles.actions}><Pressable onPress={() => timer.pause(task.id)} style={styles.secondary}><Ionicons name="pause" size={15} color="#43655F" /><Text style={styles.secondaryText}>暂停</Text></Pressable><Pressable onPress={() => timer.complete(task.id)} style={styles.complete}><Ionicons name="checkmark" size={16} color="#FFF" /><Text style={styles.completeText}>完成</Text></Pressable></View></Pressable>;
+  return <View style={styles.swipeShell}><Pressable onPress={() => timer.remove(task.id)} style={styles.delete}><Ionicons name="trash-outline" size={18} color="#FFF" /><Text style={styles.deleteText}>删除</Text></Pressable><Animated.View {...panResponder.panHandlers} style={[styles.card, { transform: [{ translateX }] }]}>{content}</Animated.View></View>;
+}
+
+const styles = StyleSheet.create({
+  swipeShell:{position:'relative',overflow:'hidden',borderRadius:22,marginBottom:9}, card:{backgroundColor:'#FFF'}, delete:{position:'absolute',right:0,top:0,bottom:0,width:DELETE_WIDTH,backgroundColor:'#E4625E',alignItems:'center',justifyContent:'center',gap:3}, deleteText:{fontSize:13,fontWeight:'700',color:'#FFF'}, running:{borderRadius:22,padding:18,borderWidth:1,borderColor:'#D5E7E2',shadowColor:'#1E4A42',shadowOpacity:.06,shadowRadius:14,elevation:2}, heading:{flexDirection:'row',alignItems:'center',gap:10},pulse:{width:9,height:9,borderRadius:5,backgroundColor:'#38A890'},runningTitle:{fontSize:17,fontWeight:'700',color:'#183B35',flex:1},times:{flexDirection:'row',marginTop:18},actual:{marginLeft:48},caption:{fontSize:12,color:'#8A9C98',marginBottom:4},elapsed:{fontSize:25,fontWeight:'700',letterSpacing:.4,color:'#203E39'},allocated:{fontSize:25,fontWeight:'700',letterSpacing:.4,color:'#1F7A70'},actions:{flexDirection:'row',gap:10,marginTop:18},secondary:{flex:1,height:42,borderRadius:12,backgroundColor:'#F2F7F5',alignItems:'center',justifyContent:'center',flexDirection:'row',gap:6},secondaryText:{fontSize:14,fontWeight:'700',color:'#43655F'},complete:{flex:1,height:42,borderRadius:12,backgroundColor:'#1F7A70',alignItems:'center',justifyContent:'center',flexDirection:'row',gap:6},completeText:{fontSize:14,fontWeight:'700',color:'#FFF'},pending:{height:70,borderRadius:17,paddingHorizontal:17,alignItems:'center',flexDirection:'row',borderWidth:1,borderColor:'#EDF1EF',gap:14},pendingTitle:{flex:1,fontSize:15,color:'#294842',fontWeight:'600'},start:{flexDirection:'row',gap:5,alignItems:'center'},startText:{color:'#1F7A70',fontSize:14,fontWeight:'700'},completed:{height:52,flexDirection:'row',alignItems:'center',paddingHorizontal:4,gap:9},completedTitle:{fontSize:14,color:'#81928D',flex:1,textDecorationLine:'line-through'},completedTime:{fontSize:13,color:'#81928D'},restart:{flexDirection:'row',alignItems:'center',gap:3},restartText:{fontSize:13,fontWeight:'700',color:'#1F7A70'}
+});

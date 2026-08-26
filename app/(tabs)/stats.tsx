@@ -1,0 +1,48 @@
+import { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { TaskTagIcon } from '../../src/components/TaskTagIcon';
+import { liveTask, useTimer } from '../../src/state/TimerContext';
+import { shortTime, todayKey } from '../../src/utils/time';
+
+export default function Stats() {
+  const [range, setRange] = useState<'today' | 'week'>('week');
+  const timer = useTimer();
+  const tasks = timer.tasks.map(task => liveTask(task, timer, timer.now));
+  const weekDays = [...new Set(tasks.map(task => task.day))].sort().slice(-7);
+  const weekTotals = weekDays.map(day => ({ day, value: tasks.filter(task => task.day === day).reduce((sum, task) => sum + task.allocatedDuration, 0) }));
+  const today = tasks.filter(task => task.day === todayKey()).reduce((sum, task) => sum + task.allocatedDuration, 0);
+  const week = weekTotals.reduce((sum, item) => sum + item.value, 0);
+  const days = range === 'today' ? [todayKey()] : weekDays;
+  const tagTotal = range === 'today' ? today : week;
+  const tagTotals = timer.categories.map(tag => ({ tag, value: tasks.filter(task => days.includes(task.day) && task.tagId === tag.id).reduce((sum, task) => sum + task.allocatedDuration, 0) })).filter(item => item.value > 0);
+  const max = Math.max(...weekTotals.map(item => item.value), 1);
+  const rangeLabel = range === 'today' ? '今天' : '最近 7 天';
+
+  return <ScrollView style={styles.page} contentContainerStyle={styles.content}>
+    <Text style={styles.title}>时间统计</Text><Text style={styles.subtitle}>只看看真实留下的工作时间</Text>
+    <View style={styles.metrics}>
+      <Metric label="今天" value={shortTime(today)} active={range === 'today'} onPress={() => setRange('today')} />
+      <Metric label="最近 7 天" value={shortTime(week)} active={range === 'week'} onPress={() => setRange('week')} />
+    </View>
+    {range === 'week' && <View style={styles.chart}>
+      <Text style={styles.chartTitle}>最近 7 天</Text>
+      <View style={styles.bars}>{weekTotals.length ? weekTotals.map(({ day, value }) => <View style={styles.barItem} key={day}>
+        <View style={styles.barArea}><Text style={styles.barValue}>{shortTime(value)}</Text><View style={[styles.bar, { height: Math.max(5, 116 * value / max) }]} /></View>
+        <Text style={styles.barLabel}>{day === todayKey() ? '今' : new Date(`${day}T12:00:00`).toLocaleDateString('zh-CN', { weekday: 'narrow' })}</Text>
+      </View>) : <Text style={styles.noData}>开始记录后，这里会长出你的时间轨迹。</Text>}</View>
+    </View>}
+    <View style={styles.tagStats}>
+      <Text style={styles.chartTitle}>分类分布</Text><Text style={styles.tagStatsSubtitle}>{rangeLabel}的实际投入</Text>
+      {tagTotals.length ? tagTotals.map(({ tag, value }) => <View key={tag.id} style={styles.tagStatRow}>
+        <TaskTagIcon tagId={tag.id} size={26} /><View style={styles.tagStatMain}><View style={styles.tagStatHeading}><Text style={styles.tagStatLabel}>{tag.label}</Text><Text style={styles.tagStatValue}>{shortTime(value)} · {Math.round(value / tagTotal * 100)}%</Text></View><View style={styles.tagTrack}><View style={[styles.tagFill, { width: `${Math.max(4, value / tagTotal * 100)}%`, backgroundColor: tag.color }]} /></View></View>
+      </View>) : <Text style={styles.tagEmpty}>还没有可按分类统计的投入时间。</Text>}
+    </View>
+    <View style={styles.note}><Text style={styles.noteTitle}>时间不会被重复计算</Text><Text style={styles.noteText}>多件事同时进行时，每一段真实经过的时间会自动平分给正在运行的任务。</Text></View>
+  </ScrollView>;
+}
+
+function Metric({ label, value, active, onPress }: { label: string; value: string; active: boolean; onPress: () => void }) { return <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected: active }} style={[styles.metric, active && styles.metricActive]}><Text style={styles.metricLabel}>{label}</Text><Text style={styles.metricValue}>{value}</Text></Pressable>; }
+
+const styles = StyleSheet.create({
+  page:{flex:1,backgroundColor:'#F7FAF8'},content:{padding:22,paddingTop:65,paddingBottom:32},title:{fontSize:28,fontWeight:'800',color:'#183B35'},subtitle:{fontSize:14,color:'#7C918B',marginTop:6,marginBottom:25},metrics:{flexDirection:'row',gap:12},metric:{flex:1,backgroundColor:'#EEF5F2',borderRadius:20,padding:17},metricActive:{backgroundColor:'#DDF1EB',borderWidth:1,borderColor:'#8BCBBB'},metricLabel:{fontSize:13,color:'#638078',fontWeight:'700'},metricValue:{fontSize:25,color:'#1D473E',fontWeight:'800',marginTop:9},chart:{marginTop:18,backgroundColor:'#FFF',borderRadius:21,padding:18,borderWidth:1,borderColor:'#E8EFEC'},chartTitle:{fontSize:15,fontWeight:'800',color:'#3A5A53'},bars:{height:158,flexDirection:'row',alignItems:'flex-end',gap:12,marginTop:12},barItem:{flex:1,alignItems:'center',height:'100%'},barArea:{height:132,justifyContent:'flex-end',width:'100%',alignItems:'center'},bar:{backgroundColor:'#7CC6B5',borderRadius:6,width:'68%'},barValue:{fontSize:10,color:'#638078',marginBottom:4,fontWeight:'700'},barLabel:{fontSize:12,color:'#80938E',marginTop:6},noData:{color:'#91A39E',fontSize:13,alignSelf:'center',textAlign:'center',padding:25},tagStats:{marginTop:18,backgroundColor:'#FFF',borderRadius:21,padding:18,borderWidth:1,borderColor:'#E8EFEC'},tagStatsSubtitle:{fontSize:12,color:'#8A9C98',marginTop:4,marginBottom:2},tagStatRow:{flexDirection:'row',alignItems:'center',gap:10,marginTop:14},tagStatMain:{flex:1},tagStatHeading:{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginBottom:6},tagStatLabel:{fontSize:14,fontWeight:'700',color:'#46655E'},tagStatValue:{fontSize:12,color:'#77908A'},tagTrack:{height:6,borderRadius:3,backgroundColor:'#EDF3F0',overflow:'hidden'},tagFill:{height:'100%',borderRadius:3},tagEmpty:{fontSize:13,lineHeight:20,color:'#91A39E',paddingVertical:10},note:{marginTop:18,padding:19,borderRadius:20,backgroundColor:'#EEF5F2'},noteTitle:{fontSize:15,fontWeight:'800',color:'#46655E'},noteText:{fontSize:13,lineHeight:20,color:'#718983',marginTop:7}}
+);
