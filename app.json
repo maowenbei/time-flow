@@ -9,7 +9,13 @@
     "icon": "./assets/app-icon.png",
     "plugins": [
       "expo-router",
-      ["expo-image-picker", { "photosPermission": "允许时流访问你的相册，以便选择分类图标。", "microphonePermission": false }]
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "允许时流访问你的相册，以便选择分类图标。",
+          "microphonePermission": false
+        }
+      ]
     ],
     "ios": { "supportsTablet": false, "bundleIdentifier": "com.timeflow.app" },
     "android": { "package": "com.timeflow.app" }
