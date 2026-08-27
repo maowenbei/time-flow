@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Timeflow",
+    "slug": "timeflow",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "timeflow",
+    "icon": "./assets/app-icon.png",
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Timeflow to access your photos for category icons.",
+          "microphonePermission": false
+        }
+      ],
+      "expo-font"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.example.timeflow",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.example.timeflow"
+    },
+    "extra": {
+      "router": {}
+    }
+  }
+}

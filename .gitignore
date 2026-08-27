@@ -19,11 +19,15 @@ ios/
 .env.*
 !.env.example
 
+# Local Expo / EAS identity
+app.json
+
 # Local product planning notes
 产品文档.txt
 
 # Local iOS packaging and release notes
 docs/ios-发布指南.md
+.easignore
 .eas/
 *.mobileprovision
 *.p12
@@ -46,3 +50,5 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+app.json

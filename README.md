@@ -38,7 +38,9 @@ npm run typecheck
 
 ### 用 Expo Go 在 iPhone 预览
 
-在 iPhone 安装 Expo Go 后，于项目根目录执行 `npm start`，再用 Expo Go 扫描终端显示的二维码即可预览。手机和电脑应连接同一网络；若无法连接，可执行 `npx expo start --tunnel` 后重新扫码。
+在项目 SDK 与 iPhone 上安装的 Expo Go 版本兼容时，可于项目根目录执行 `npm start`，再用 Expo Go 扫描终端显示的二维码预览。手机和电脑应连接同一网络；若无法连接，可执行 `npx expo start --tunnel` 后重新扫码。
+
+本项目使用 Expo SDK 57；当前 App Store 版 iOS Expo Go 仅支持 SDK 54，因此 iPhone 请使用 Development Build 或 TestFlight 进行真机预览。  https://sign.expo.dev/ 下载指定SDK版本的Expo Go。
 
 ## 计时规则
 
