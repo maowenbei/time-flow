@@ -68,8 +68,8 @@ export default function History() {
 
   return <>
     <ScrollView style={styles.page} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>工作记录</Text>
-      <Text style={styles.subtitle}>回看那些自然流过的时间</Text>
+      <Text style={styles.title}>记录</Text>
+      <Text style={styles.subtitle}>回看每天做过的事</Text>
       {groups.length ? groups.map(([day, tasks]) => {
         const expanded = day === expandedDay;
         const liveTasks = tasks.map(task => liveTask(task, timer, timer.now));

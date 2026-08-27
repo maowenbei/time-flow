@@ -4,8 +4,7 @@ import { useTimer } from '../state/TimerContext';
 
 export function TaskTagIcon({ tagId, size = 24 }: { tagId?: TaskTagId; size?: number }) {
   const { categories } = useTimer(); const tag = getTaskTag(tagId, categories);
-  const isOriginalIcon = ['work', 'study', 'exercise', 'life'].includes(tag.systemIconId ?? tag.id);
-  if (tag.image) return <Image source={tag.image} style={{ width: size, height: size, transform: [{ scale: isOriginalIcon ? 1.42 : 1.2 }] }} resizeMode="contain" accessibilityLabel={tag.label} />;
+  if (tag.image) return <Image source={tag.image} style={{ width: size, height: size, transform: [{ scale: 1.2 }] }} resizeMode="contain" accessibilityLabel={tag.label} />;
   return <View style={[styles.uncategorized, { width: size, height: size, borderRadius: size / 2 }]} accessibilityLabel={tag.label}><View style={[styles.dot, { backgroundColor: tag.color }]} /></View>;
 }
 

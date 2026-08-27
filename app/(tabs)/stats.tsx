@@ -19,7 +19,7 @@ export default function Stats() {
   const rangeLabel = range === 'today' ? '今天' : '最近 7 天';
 
   return <ScrollView style={styles.page} contentContainerStyle={styles.content}>
-    <Text style={styles.title}>时间统计</Text><Text style={styles.subtitle}>只看看真实留下的工作时间</Text>
+    <Text style={styles.title}>统计</Text><Text style={styles.subtitle}>看看时间都花在了哪里</Text>
     <View style={styles.metrics}>
       <Metric label="今天" value={shortTime(today)} active={range === 'today'} onPress={() => setRange('today')} />
       <Metric label="最近 7 天" value={shortTime(week)} active={range === 'week'} onPress={() => setRange('week')} />
