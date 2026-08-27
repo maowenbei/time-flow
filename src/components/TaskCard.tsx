@@ -2,13 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRef } from 'react';
 import { Animated, PanResponder, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Task, liveTask, useTimer } from '../state/TimerContext';
-import { fullTime, shortTime } from '../utils/time';
+import { fullTime } from '../utils/time';
 import { TaskTagIcon } from './TaskTagIcon';
+import { formatShortTime, useI18n } from '../i18n';
 
 const DELETE_WIDTH = 78;
 
 export function TaskCard({ task, onLongPress }: { task: Task; onLongPress?: () => void }) {
-  const timer = useTimer(); const live = liveTask(task, timer, timer.now); const isRunning = task.status === 'running';
+  const timer = useTimer(); const { locale, t } = useI18n(); const live = liveTask(task, timer, timer.now); const isRunning = task.status === 'running';
   const translateX = useRef(new Animated.Value(0)).current;
   const close = () => Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
   const panResponder = useRef(PanResponder.create({
@@ -18,12 +19,12 @@ export function TaskCard({ task, onLongPress }: { task: Task; onLongPress?: () =
     onPanResponderTerminate: close,
   })).current;
   let content: React.ReactNode;
-  const editIcon = (size: number) => <Pressable onPress={onLongPress} hitSlop={8} accessibilityRole="button" accessibilityLabel={`编辑${task.title}`}><TaskTagIcon tagId={task.tagId} size={size} /></Pressable>;
-  const editTitle = (style: any) => <Pressable onPress={onLongPress} hitSlop={6} style={styles.titleButton} accessibilityRole="button" accessibilityLabel={`编辑${task.title}`}><Text style={style}>{task.title}</Text></Pressable>;
-  if (task.status === 'completed') content = <Pressable onLongPress={onLongPress} delayLongPress={450} style={styles.completed}>{editIcon(27)}<Ionicons name="checkmark-circle" size={16} color="#86AAA0" />{editTitle(styles.completedTitle)}<Text style={styles.completedTime}>{shortTime(live.allocatedDuration)}</Text><Pressable onPress={() => timer.restart(task.id)} hitSlop={8} style={styles.restart}><Ionicons name="refresh" size={15} color="#1F7A70" /><Text style={styles.restartText}>重启</Text></Pressable></Pressable>;
-  else if (!isRunning) content = <Pressable onLongPress={onLongPress} delayLongPress={450} style={styles.pending}>{editIcon(31)}{editTitle(styles.pendingTitle)}<Pressable onPress={() => timer.start(task.id)} hitSlop={8} style={styles.start} accessibilityLabel={`${task.status === 'paused' ? '继续' : '开始'}${task.title}`}><Ionicons name="play" size={12} color="#1F7A70" /><Text style={styles.startText}>{task.status === 'paused' ? '继续' : '开始'}</Text></Pressable></Pressable>;
-  else content = <Pressable onLongPress={onLongPress} delayLongPress={450} style={styles.running}><View style={styles.heading}>{editIcon(32)}<View style={styles.pulse} />{editTitle(styles.runningTitle)}</View><View style={styles.times}><View><Text style={styles.caption}>运行时间</Text><Text style={styles.elapsed}>{fullTime(live.elapsedDuration)}</Text></View><View style={styles.actual}><Text style={styles.caption}>实际投入</Text><Text style={styles.allocated}>{fullTime(live.allocatedDuration)}</Text></View></View><View style={styles.actions}><Pressable onPress={() => timer.pause(task.id)} style={styles.secondary}><Ionicons name="pause" size={15} color="#43655F" /><Text style={styles.secondaryText}>暂停</Text></Pressable><Pressable onPress={() => timer.complete(task.id)} style={styles.complete}><Ionicons name="checkmark" size={16} color="#FFF" /><Text style={styles.completeText}>完成</Text></Pressable></View></Pressable>;
-  return <View style={styles.swipeShell}><Pressable onPress={() => timer.remove(task.id)} style={styles.delete}><Ionicons name="trash-outline" size={18} color="#FFF" /><Text style={styles.deleteText}>删除</Text></Pressable><Animated.View {...panResponder.panHandlers} style={[styles.card, { transform: [{ translateX }] }]}>{content}</Animated.View></View>;
+  const editIcon = (size: number) => <Pressable onPress={onLongPress} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('task.edit', { title: task.title })}><TaskTagIcon tagId={task.tagId} size={size} /></Pressable>;
+  const editTitle = (style: any) => <Pressable onPress={onLongPress} hitSlop={6} style={styles.titleButton} accessibilityRole="button" accessibilityLabel={t('task.edit', { title: task.title })}><Text style={style}>{task.title}</Text></Pressable>;
+  if (task.status === 'completed') content = <Pressable onLongPress={onLongPress} delayLongPress={450} style={styles.completed}>{editIcon(27)}<Ionicons name="checkmark-circle" size={16} color="#86AAA0" />{editTitle(styles.completedTitle)}<Text style={styles.completedTime}>{formatShortTime(live.allocatedDuration, locale)}</Text><Pressable onPress={() => timer.restart(task.id)} hitSlop={8} style={styles.restart}><Ionicons name="refresh" size={15} color="#1F7A70" /><Text style={styles.restartText}>{t('task.restart')}</Text></Pressable></Pressable>;
+  else if (!isRunning) { const action = task.status === 'paused' ? t('task.resume') : t('task.start'); content = <Pressable onLongPress={onLongPress} delayLongPress={450} style={styles.pending}>{editIcon(31)}{editTitle(styles.pendingTitle)}<Pressable onPress={() => timer.start(task.id)} hitSlop={8} style={styles.start} accessibilityLabel={`${action} ${task.title}`}><Ionicons name="play" size={12} color="#1F7A70" /><Text style={styles.startText}>{action}</Text></Pressable></Pressable>; }
+  else content = <Pressable onLongPress={onLongPress} delayLongPress={450} style={styles.running}><View style={styles.heading}>{editIcon(32)}<View style={styles.pulse} />{editTitle(styles.runningTitle)}</View><View style={styles.times}><View><Text style={styles.caption}>{t('task.runningTime')}</Text><Text style={styles.elapsed}>{fullTime(live.elapsedDuration)}</Text></View><View style={styles.actual}><Text style={styles.caption}>{t('task.actualTime')}</Text><Text style={styles.allocated}>{fullTime(live.allocatedDuration)}</Text></View></View><View style={styles.actions}><Pressable onPress={() => timer.pause(task.id)} style={styles.secondary}><Ionicons name="pause" size={15} color="#43655F" /><Text style={styles.secondaryText}>{t('task.pause')}</Text></Pressable><Pressable onPress={() => timer.complete(task.id)} style={styles.complete}><Ionicons name="checkmark" size={16} color="#FFF" /><Text style={styles.completeText}>{t('task.complete')}</Text></Pressable></View></Pressable>;
+  return <View style={styles.swipeShell}><Pressable onPress={() => timer.remove(task.id)} style={styles.delete}><Ionicons name="trash-outline" size={18} color="#FFF" /><Text style={styles.deleteText}>{t('task.delete')}</Text></Pressable><Animated.View {...panResponder.panHandlers} style={[styles.card, { transform: [{ translateX }] }]}>{content}</Animated.View></View>;
 }
 
 const styles = StyleSheet.create({

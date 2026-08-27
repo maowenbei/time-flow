@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
-import { createStarterTaskTags, tagColors, TaskTag, TaskTagId, uncategorizedTagId } from '../constants/taskTags';
+import { createStarterTaskTags, isBuiltInTagId, isLegacyBuiltInLabel, tagColors, TaskTag, TaskTagId, uncategorizedTagId } from '../constants/taskTags';
 import { todayKey, yesterdayKey } from '../utils/time';
 
 export type TaskStatus = 'pending' | 'running' | 'paused' | 'completed';
@@ -11,7 +11,11 @@ const KEY = 'timeflow-v1'; const TimerContext = createContext<TimerApi | null>(n
 const initial: TimerState = { tasks: [], categories: createStarterTaskTags(), lastTimestamp: Date.now() };
 
 function normalizeState(stored: Partial<TimerState>): TimerState {
-  const sourceCategories = Array.isArray(stored.categories) && stored.categories.length ? stored.categories : createStarterTaskTags();
+  const sourceCategories = Array.isArray(stored.categories) && stored.categories.length ? stored.categories.map(category => {
+    if (!isBuiltInTagId(category.id) || category.isCustomLabel) return category;
+    if (isLegacyBuiltInLabel(category.id, category.label)) return { ...category, label: undefined, isCustomLabel: false };
+    return category.label ? { ...category, isCustomLabel: true } : category;
+  }) : createStarterTaskTags();
   const categories = sourceCategories.some(tag => tag.id === uncategorizedTagId) ? sourceCategories : [...sourceCategories, createStarterTaskTags().find(tag => tag.id === uncategorizedTagId)!];
   const categoryIds = new Set(categories.map(tag => tag.id));
   return { lastTimestamp: typeof stored.lastTimestamp === 'number' ? stored.lastTimestamp : Date.now(), categories, tasks: Array.isArray(stored.tasks) ? stored.tasks.map(task => ({ ...task, tagId: categoryIds.has(task.tagId) ? task.tagId : uncategorizedTagId })) : [] };
@@ -36,8 +40,8 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     copyYesterday: () => setState(old => { const at = Date.now(); const next = flush(old, at); const today = todayKey(at); if (next.tasks.some(task => task.day === today)) return next; const copies = next.tasks.filter(task => task.day === yesterdayKey()).map((task, index): Task => ({ id: `${at}-${index}-${Math.random()}`, title: task.title, createdAt: at, status: 'pending', elapsedDuration: 0, allocatedDuration: 0, day: today, tagId: next.categories.some(tag => tag.id === task.tagId) ? task.tagId : uncategorizedTagId })); return { ...next, tasks: [...copies, ...next.tasks] }; }),
     updateTask: (id, title, tagId) => setState(old => { const next = flush(old, Date.now()); const validTagId = next.categories.some(tag => tag.id === tagId) ? tagId : uncategorizedTagId; return { ...next, tasks: next.tasks.map(task => task.id === id ? { ...task, title: title.trim(), tagId: validTagId } : task) }; }),
     updateAllocatedDuration: (id, allocatedDuration) => setState(old => { const next = flush(old, Date.now()); return { ...next, tasks: next.tasks.map(task => task.id === id ? { ...task, allocatedDuration } : task) }; }),
-    addCategory: (label, iconUri, systemIconId) => setState(old => { const trimmed = label.trim().slice(0, 12); if (!trimmed) return old; const color = tagColors[old.categories.filter(tag => tag.id !== uncategorizedTagId).length % tagColors.length]; return { ...old, categories: [...old.categories.filter(tag => tag.id !== uncategorizedTagId), { id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, label: trimmed, color, iconUri, systemIconId }, old.categories.find(tag => tag.id === uncategorizedTagId)!] }; }),
-    updateCategory: (id, label, iconUri, systemIconId) => setState(old => id === uncategorizedTagId ? old : { ...old, categories: old.categories.map(tag => tag.id === id ? { ...tag, label: label.trim().slice(0, 12) || tag.label, iconUri, systemIconId } : tag) }),
+    addCategory: (label, iconUri, systemIconId) => setState(old => { const trimmed = label.trim().slice(0, 12); if (!trimmed) return old; const color = tagColors[old.categories.filter(tag => tag.id !== uncategorizedTagId).length % tagColors.length]; return { ...old, categories: [...old.categories.filter(tag => tag.id !== uncategorizedTagId), { id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, label: trimmed, isCustomLabel: true, color, iconUri, systemIconId }, old.categories.find(tag => tag.id === uncategorizedTagId)!] }; }),
+    updateCategory: (id, label, iconUri, systemIconId) => setState(old => id === uncategorizedTagId ? old : { ...old, categories: old.categories.map(tag => tag.id === id ? { ...tag, label: label.trim().slice(0, 12) || tag.label, isCustomLabel: true, iconUri, systemIconId } : tag) }),
     deleteCategory: id => setState(old => { if (id === uncategorizedTagId || !old.categories.some(tag => tag.id === id)) return old; const next = flush(old, Date.now()); return { ...next, categories: next.categories.filter(tag => tag.id !== id), tasks: next.tasks.map(task => task.tagId === id ? { ...task, tagId: uncategorizedTagId } : task) }; }),
     remove: id => setState(old => { const next = flush(old, Date.now()); return { ...next, tasks: next.tasks.filter(t => t.id !== id) }; })
   }), [state, ready, now]);
