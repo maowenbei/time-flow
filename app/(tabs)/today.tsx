@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Keyboard, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Keyboard, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { NestableDraggableFlatList, NestableScrollContainer, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { TaskCard } from '../../src/components/TaskCard';
 import { TaskTagIcon } from '../../src/components/TaskTagIcon';
 import { getTaskTagLabel, TaskTagId } from '../../src/constants/taskTags';
@@ -9,12 +10,14 @@ import { formatDayLabel, useI18n } from '../../src/i18n';
 import { liveTask, Task, useTimer } from '../../src/state/TimerContext';
 import { fullTime, todayKey, yesterdayKey } from '../../src/utils/time';
 
+const orderTasks = (tasks: Task[]) => [...tasks].sort((a, b) => a.sortOrder - b.sortOrder);
+
 export default function Today() {
   const timer = useTimer(); const router = useRouter(); const { locale, t } = useI18n();
   const [title, setTitle] = useState(''); const [tagPickerVisible, setTagPickerVisible] = useState(false); const [editingTask, setEditingTask] = useState<Task | null>(null); const [editingTitle, setEditingTitle] = useState(''); const [editingTagId, setEditingTagId] = useState<TaskTagId>('uncategorized');
   if (!timer.ready) return <View style={styles.loading}><ActivityIndicator color="#1F7A70" /></View>;
   const todayTasks = timer.tasks.filter(task => task.day === todayKey()); const yesterdayTasks = timer.tasks.filter(task => task.day === yesterdayKey());
-  const running = todayTasks.filter(task => task.status === 'running'); const pending = todayTasks.filter(task => task.status === 'pending' || task.status === 'paused'); const completed = todayTasks.filter(task => task.status === 'completed');
+  const running = orderTasks(todayTasks.filter(task => task.status === 'running')); const pending = orderTasks(todayTasks.filter(task => task.status === 'pending' || task.status === 'paused')); const completed = orderTasks(todayTasks.filter(task => task.status === 'completed'));
   const work = todayTasks.reduce((total, task) => total + liveTask(task, timer, timer.now).allocatedDuration, 0);
   const allocationShare = running.length ? new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(100 / running.length) : '';
   const openTagPicker = () => { if (title.trim()) setTagPickerVisible(true); };
@@ -23,17 +26,19 @@ export default function Today() {
   const closeEditor = () => { setEditingTask(null); Keyboard.dismiss(); };
   const saveTask = () => { if (!editingTask || !editingTitle.trim()) return; timer.updateTask(editingTask.id, editingTitle, editingTagId); closeEditor(); };
   const taskWord = completed.length === 1 ? t('common.task') : t('common.tasks');
+  const renderSortableTask = ({ item, drag, isActive }: { item: Task; drag: () => void; isActive: boolean }) => <ScaleDecorator><TaskCard task={item} onPress={() => openEditor(item)} onLongPress={drag} isDragging={isActive} /></ScaleDecorator>;
+  const saveOrder = (tasks: Task[]) => timer.reorderTasks(tasks.map(task => task.id));
   return <>
-    <ScrollView style={styles.page} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <NestableScrollContainer style={styles.page} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <View style={styles.topline}><View><Text style={styles.brand}>{t('app.name')}</Text><Text style={styles.date}>{formatDayLabel(locale)}</Text></View><Pressable onPress={() => router.push('/settings')} style={styles.settings} accessibilityRole="button" accessibilityLabel={t('common.settings')}><Ionicons name="settings-outline" size={20} color="#64807A" /></Pressable></View>
       <View style={styles.hero}><Text style={styles.eyebrow}>{t('today.actualTime')}</Text><Text style={styles.total}>{fullTime(work)}</Text>{completed.length ? <Text style={styles.done}>{t('today.completed', { count: completed.length, taskWord })}</Text> : null}</View>
       <View style={styles.add}><TextInput value={title} onChangeText={setTitle} onSubmitEditing={openTagPicker} placeholder={t('today.addPlaceholder')} placeholderTextColor="#9AA9A5" style={styles.input} returnKeyType="done" /><Pressable onPress={openTagPicker} style={[styles.addButton, !title.trim() && styles.addButtonDisabled]} accessibilityLabel={t('today.chooseCategory')}><Ionicons name="add" size={23} color="#FFF" /></Pressable></View>
       {!todayTasks.length && yesterdayTasks.length ? <Pressable onPress={timer.copyYesterday} style={styles.copyYesterday}><Ionicons name="copy-outline" size={18} color="#1F7A70" /><Text style={styles.copyYesterdayText}>{t('today.copyYesterday', { count: yesterdayTasks.length })}</Text></Pressable> : null}
-      {running.length ? <><Text style={styles.section}>{t('today.running', { count: running.length })}{running.length >= 2 ? ` · ${t('today.allocation', { share: allocationShare })}` : ''}</Text>{running.map(task => <TaskCard task={task} key={task.id} onLongPress={() => openEditor(task)} />)}</> : null}
-      {pending.length ? <><Text style={styles.section}>{running.length ? t('today.next') : t('today.pending')}</Text>{pending.map(task => <TaskCard task={task} key={task.id} onLongPress={() => openEditor(task)} />)}</> : null}
-      {completed.length ? <><Text style={styles.section}>{t('today.completedSection', { count: completed.length })}</Text><View style={styles.completedList}>{completed.map(task => <TaskCard task={task} key={task.id} onLongPress={() => openEditor(task)} />)}</View></> : null}
+      {running.length ? <><Text style={styles.section}>{t('today.running', { count: running.length })}{running.length >= 2 ? ` · ${t('today.allocation', { share: allocationShare })}` : ''}</Text><NestableDraggableFlatList data={running} keyExtractor={task => task.id} renderItem={renderSortableTask} onDragEnd={({ data }) => saveOrder(data)} scrollEnabled={false} /></> : null}
+      {pending.length ? <><Text style={styles.section}>{running.length ? t('today.next') : t('today.pending')}</Text><NestableDraggableFlatList data={pending} keyExtractor={task => task.id} renderItem={renderSortableTask} onDragEnd={({ data }) => saveOrder(data)} scrollEnabled={false} /></> : null}
+      {completed.length ? <><Text style={styles.section}>{t('today.completedSection', { count: completed.length })}</Text><View style={styles.completedList}><NestableDraggableFlatList data={completed} keyExtractor={task => task.id} renderItem={renderSortableTask} onDragEnd={({ data }) => saveOrder(data)} scrollEnabled={false} /></View></> : null}
       {!todayTasks.length && !yesterdayTasks.length ? <View style={styles.empty}><Ionicons name="water-outline" size={30} color="#A7C8C0" /><Text style={styles.emptyTitle}>{t('today.emptyTitle')}</Text><Text style={styles.emptyText}>{t('today.emptyText')}</Text></View> : null}
-    </ScrollView>
+    </NestableScrollContainer>
     <Modal visible={tagPickerVisible} transparent animationType="slide" onRequestClose={() => setTagPickerVisible(false)}><Pressable style={styles.modalBackdrop} onPress={() => setTagPickerVisible(false)}><Pressable style={styles.tagSheet} onPress={event => event.stopPropagation()}><View style={styles.sheetHandle} /><Text style={styles.sheetTitle}>{t('today.chooseCategory')}</Text><Text style={styles.sheetSubtitle}>{t('today.createNow')}</Text><View style={styles.tagGrid}>{timer.categories.map(tag => { const label = getTaskTagLabel(tag, locale); return <Pressable key={tag.id} onPress={() => createTask(tag.id)} style={styles.tagOption} accessibilityLabel={t('today.createTask', { label })}><View style={styles.tagIconWrap}><TaskTagIcon tagId={tag.id} size={32} /></View><Text style={styles.tagLabel}>{label}</Text></Pressable>; })}</View></Pressable></Pressable></Modal>
     <Modal visible={editingTask !== null} transparent animationType="slide" onRequestClose={closeEditor}><Pressable style={styles.modalBackdrop} onPress={closeEditor}><Pressable style={styles.tagSheet} onPress={event => event.stopPropagation()}><View style={styles.sheetHandle} /><Text style={styles.sheetTitle}>{t('today.editTask')}</Text><Text style={styles.inputLabel}>{t('today.taskName')}</Text><TextInput value={editingTitle} onChangeText={setEditingTitle} onSubmitEditing={Keyboard.dismiss} returnKeyType="done" blurOnSubmit placeholder={t('today.taskName')} placeholderTextColor="#9AA9A5" style={styles.editInput} /><Text style={styles.inputLabel}>{t('today.taskCategory')}</Text><View style={styles.tagGrid}>{timer.categories.map(tag => { const label = getTaskTagLabel(tag, locale); return <Pressable key={tag.id} onPress={() => setEditingTagId(tag.id)} style={[styles.tagOption, editingTagId === tag.id && styles.tagOptionSelected]} accessibilityLabel={t('today.chooseTaskCategory', { label })}><View style={styles.tagIconWrap}><TaskTagIcon tagId={tag.id} size={32} /></View><Text style={styles.tagLabel}>{label}</Text></Pressable>; })}</View><View style={styles.editActions}><Pressable onPress={closeEditor} style={styles.cancel}><Text style={styles.cancelText}>{t('common.cancel')}</Text></Pressable><Pressable onPress={saveTask} style={[styles.save, !editingTitle.trim() && styles.saveDisabled]}><Text style={styles.saveText}>{t('common.save')}</Text></Pressable></View></Pressable></Pressable></Modal>
   </>;
