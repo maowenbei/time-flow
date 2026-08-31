@@ -14,7 +14,7 @@ const translations = {
     common: { cancel: 'Cancel', save: 'Save', delete: 'Delete', settings: 'Settings', task: 'task', tasks: 'tasks' },
     today: {
       actualTime: 'Actual time today', completed: 'Completed %{count} %{taskWord}', addPlaceholder: 'Add something to do today',
-      chooseCategory: 'Choose a category', createNow: 'Choose one to create it now', copyYesterday: 'Copy %{count} task(s) from yesterday',
+      chooseCategory: 'Choose a category', createNow: 'Choose one to create it now', copyLatestTasks: 'Copy %{count} task(s) from the latest day',
       running: 'In progress · %{count}', allocation: 'Each gets %{share}% of actual time', next: 'Up next', pending: 'To start',
       completedSection: 'Completed today · %{count}', emptyTitle: 'Start with one small thing', emptyText: 'Write it down, tap start, and let time leave a trace.',
       editTask: 'Edit task', taskName: 'Task name', taskCategory: 'Task category', createTask: 'Create %{label} task', chooseTaskCategory: 'Choose %{label} category',
@@ -44,7 +44,7 @@ const translations = {
     common: { cancel: '取消', save: '保存', delete: '删除', settings: '设置', task: '件任务', tasks: '件任务' },
     today: {
       actualTime: '今日实际投入', completed: '已完成 %{count} 件', addPlaceholder: '添加一件今天要做的事',
-      chooseCategory: '选择任务分类', createNow: '选择后立即创建', copyYesterday: '一键复制昨天的 %{count} 件任务',
+      chooseCategory: '选择任务分类', createNow: '选择后立即创建', copyLatestTasks: '复制最近有任务日的 %{count} 件任务',
       running: '正在进行 · %{count}', allocation: '各获得 %{share}% 实际时间', next: '接下来', pending: '待开始',
       completedSection: '今天完成 · %{count}', emptyTitle: '从一件小事开始', emptyText: '写下它，轻点开始，让时间留下痕迹。',
       editTask: '编辑任务', taskName: '任务名称', taskCategory: '任务分类', createTask: '创建 %{label} 任务', chooseTaskCategory: '选择 %{label} 分类',
