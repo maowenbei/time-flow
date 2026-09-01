@@ -3,6 +3,7 @@ import { ReactNode, useRef } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import ReanimatedSwipeable, { type SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 
+import { colors } from '../constants/colors';
 const DELETE_WIDTH = 104;
 
 type SwipeDeleteProps = {
@@ -25,7 +26,9 @@ export function SwipeDelete({ actionVariant = 'regular', children, cornerRadius 
 
 const styles = StyleSheet.create({
   shell:{overflow:'hidden'},
-  rail:{width:DELETE_WIDTH,backgroundColor:'#FFF3F2',alignItems:'center',justifyContent:'center',paddingHorizontal:8},
+  rail:{width:DELETE_WIDTH,backgroundColor:'colors.surface3F2',alignItems:'center',justifyContent:'center',paddingHorizontal:8},
   action:{width:'100%',height:48,borderRadius:17,backgroundColor:'#FCE2E0',borderWidth:1,borderColor:'#F4C9C6',alignItems:'center',justifyContent:'center',gap:5},
   label:{fontWeight:'800',color:'#BD514D'},labelRegular:{fontSize:14},labelCompact:{fontSize:12},
 });
+
+
