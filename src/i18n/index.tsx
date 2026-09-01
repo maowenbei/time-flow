@@ -23,7 +23,7 @@ const translations = {
     history: {
       title: 'History', subtitle: 'Look back at what you did each day', completed: 'Completed', invested: 'Actual time', editHint: 'Long press to edit the recorded time',
       emptyTitle: 'Your history will appear here', emptyText: 'Finish a task to leave a memory of the day.', editTime: 'Edit recorded time', actualMinutes: 'Actual time (minutes)', invalidMinutes: 'Enter a whole number of 0 or more.',
-      statuses: { completed: 'Completed', running: 'In progress', paused: 'Paused', pending: 'Not started' },
+      statuses: { completed: 'Completed', running: 'In progress', paused: 'Ran', pending: 'Not started' },
     },
     stats: {
       title: 'Stats', subtitle: 'See where your time goes', today: 'Today', last7Days: 'Last 7 days', categoryBreakdown: 'Category breakdown', actualTime: 'Actual time',
@@ -53,7 +53,7 @@ const translations = {
     history: {
       title: '记录', subtitle: '回看每天做过的事', completed: '完成', invested: '投入', editHint: '长按可修改记录时间',
       emptyTitle: '记录会在这里慢慢出现', emptyText: '完成一件事，留下一天的回忆。', editTime: '修改记录时间', actualMinutes: '实际投入（分钟）', invalidMinutes: '请输入不小于 0 的整数分钟。',
-      statuses: { completed: '已完成', running: '进行中', paused: '已暂停', pending: '未开始' },
+      statuses: { completed: '已完成', running: '进行中', paused: '已运行', pending: '未开始' },
     },
     stats: {
       title: '统计', subtitle: '看看时间都花在了哪里', today: '今天', last7Days: '最近 7 天', categoryBreakdown: '分类分布', actualTime: '实际投入',
