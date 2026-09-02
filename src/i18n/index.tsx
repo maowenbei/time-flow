@@ -12,6 +12,7 @@ const translations = {
     app: { name: 'ThreadFlow' },
     tabs: { today: 'Today', history: 'History', stats: 'Stats' },
     common: { cancel: 'Cancel', save: 'Save', delete: 'Delete', settings: 'Settings', task: 'task', tasks: 'tasks' },
+    hints: { dismiss: 'Dismiss hint', todayActions: 'Tap a task name to edit it. Swipe left to delete.', historyActions: 'Tap a task name to edit it. Long press to adjust actual time. Swipe left to delete.' },
     today: {
       actualTime: 'Actual time today', completed: 'Completed %{count} %{taskWord}', addPlaceholder: 'Add something to do today',
       chooseCategory: 'Choose a category', createNow: 'Choose one to create it now', copyLatestTasks: 'Copy %{count} task(s) from the latest day',
@@ -39,6 +40,7 @@ const translations = {
     tags: { work: 'Work', study: 'Study', exercise: 'Exercise', life: 'Life', uncategorized: 'Uncategorized' },
   },
   'zh-CN': {
+    hints: { dismiss: '\u5173\u95ed\u63d0\u793a', todayActions: '\u70b9\u51fb\u4efb\u52a1\u540d\u79f0\u53ef\u7f16\u8f91\uff1b\u5de6\u6ed1\u53ef\u5220\u9664\u3002', historyActions: '\u70b9\u51fb\u4efb\u52a1\u540d\u79f0\u53ef\u7f16\u8f91\uff1b\u957f\u6309\u53ef\u8c03\u6574\u5b9e\u9645\u6295\u5165\u65f6\u957f\uff1b\u5de6\u6ed1\u53ef\u5220\u9664\u3002' },
     app: { name: '时流' },
     tabs: { today: '今天', history: '记录', stats: '统计' },
     common: { cancel: '取消', save: '保存', delete: '删除', settings: '设置', task: '件任务', tasks: '件任务' },
