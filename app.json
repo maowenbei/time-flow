@@ -1,18 +1,19 @@
 {
   "expo": {
-    "name": "Timeflow",
-    "slug": "timeflow",
+    "name": "ThreadFlow",
+    "slug": "threadflow",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "scheme": "timeflow",
+    "scheme": "threadflow",
     "icon": "./assets/app-icon.png",
     "plugins": [
       "expo-router",
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow Timeflow to access your photos for category icons.",
+          "photosPermission": "Allow ThreadFlow to access your photos for category icons.",
+          "cameraPermission": false,
           "microphonePermission": false
         }
       ],
@@ -25,18 +26,24 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.example.timeflow",
+      "bundleIdentifier": "app.timeflow.ios",
       "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "CFBundleAllowMixedLocalizations": true
+        "CFBundleAllowMixedLocalizations": true,
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false
+        }
       }
     },
     "android": {
-      "package": "com.example.timeflow"
+      "package": "com.threadflow.app"
     },
     "extra": {
-      "router": {}
+      "router": {},
+      "eas": {
+        "projectId": "e0dff552-a8e5-4a98-b79e-b78fd9225a59"
+      }
     }
   }
 }

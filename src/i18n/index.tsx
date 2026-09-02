@@ -9,7 +9,7 @@ const LANGUAGE_MODE_KEY = 'timeflow-language-mode';
 
 const translations = {
   en: {
-    app: { name: 'Timeflow' },
+    app: { name: 'ThreadFlow' },
     tabs: { today: 'Today', history: 'History', stats: 'Stats' },
     common: { cancel: 'Cancel', save: 'Save', delete: 'Delete', settings: 'Settings', task: 'task', tasks: 'tasks' },
     today: {
