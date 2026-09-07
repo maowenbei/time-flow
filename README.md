@@ -1,5 +1,21 @@
 # 时流 / ThreadFlow
 
+[访问官网 / Visit website](https://www.muzhistudy.com/threadflow/index.html)
+
+## 提审截图 / Screenshots
+
+### 中文
+
+| 今天 | 7 天统计 | 本月统计 | 记录 |
+| --- | --- | --- | --- |
+| ![今天](<提审截图/今天.png>) | ![7天统计](<提审截图/7天统计.png>) | ![本月统计](<提审截图/本月统计.png>) | ![记录](<提审截图/记录.png>) |
+
+### English
+
+| Today | 7-day stats | Monthly stats | History |
+| --- | --- | --- | --- |
+| ![Today](<提审截图/today.png>) | ![7-day stats](<提审截图/stats7day.png>) | ![Monthly stats](<提审截图/statsmonth.png>) | ![History](<提审截图/history.png>) |
+
 时流（ThreadFlow）是一款轻量、非强制的每日工作计时应用。写下要做的事，开始时轻点一下；一天结束时，回看真实投入的时间。
 
 它不使用番茄钟，也不要求复杂的任务拆分或项目管理。多个任务可同时计时，而同一段真实经过时间只会被公平分配一次。
