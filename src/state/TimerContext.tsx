@@ -4,7 +4,7 @@ import type { LiveActivity } from 'expo-widgets';
 import { Platform } from 'react-native';
 import { createStarterTaskTags, isBuiltInTagId, isLegacyBuiltInLabel, tagColors, TaskTag, TaskTagId, uncategorizedTagId } from '../constants/taskTags';
 import { todayKey } from '../utils/time';
-import { addThreadFlowInteractionListener, getThreadFlowActivity, ThreadFlowActivityProps } from '../live/ThreadFlowActivity';
+import { getThreadFlowActivity, ThreadFlowActivityProps } from '../live/ThreadFlowActivity';
 import { syncLongReminders, syncStartReminder } from '../services/reminders';
 import { useI18n } from '../i18n';
 
@@ -18,6 +18,11 @@ type TimerApi = TimerState & { ready: boolean; now: number; addTask: (title: str
 const KEY = 'timeflow-v1'; const TimerContext = createContext<TimerApi | null>(null);
 const defaultReminders: ReminderSettings = { startEnabled: false, startFrequency: 'weekdays', startHour: 9, startMinute: 0, longEnabled: false };
 const initial: TimerState = { tasks: [], categories: createStarterTaskTags(), lastTimestamp: Date.now(), reminders: defaultReminders, dismissedHints: [] };
+
+function activityDuration(duration: number) {
+  const minutes = Math.max(0, Math.floor(duration / 60000));
+  return minutes >= 60 ? `${Math.floor(minutes / 60)}h ${minutes % 60}m` : `${minutes}m`;
+}
 
 function normalizeState(stored: Partial<TimerState>): TimerState {
   const sourceCategories = Array.isArray(stored.categories) && stored.categories.length ? stored.categories.map(category => {
@@ -113,9 +118,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     if (Platform.OS !== 'ios') return;
     const ThreadFlowActivity = getThreadFlowActivity();
     if (!ThreadFlowActivity) return;
-    const props: ThreadFlowActivityProps = { appName: t('app.name'), taskLabel: running[0]?.title.slice(0, 32) ?? '', runningLabel: t('liveActivity.running'), pauseLabel: t('liveActivity.pause'), taskCount: running.length, startedAt: new Date(state.workSessionStartedAt ?? Date.now()).toISOString() };
+    const liveElapsedShare = running.length && !state.breakState ? Math.max(0, now - state.lastTimestamp) / running.length : 0;
+    const liveTasks = running.map(task => ({ id: task.id, title: task.title, actualDuration: activityDuration(task.allocatedDuration + liveElapsedShare) }));
+    const firstTask = liveTasks[0];
+    const props: ThreadFlowActivityProps = { taskLabel: firstTask?.title ?? '', tasksInProgressLabel: t('liveActivity.tasksInProgress', { count: running.length }), taskCount: running.length, startedAt: new Date(state.workSessionStartedAt ?? Date.now()).toISOString(), tasks: liveTasks };
     const instances = ThreadFlowActivity.getInstances();
-    if (!running.length) {
+    if (!running.length || state.breakState) {
       Promise.all(instances.map(instance => instance.end('immediate'))).catch(() => undefined);
       liveActivity.current = null;
       return;
@@ -123,17 +131,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     const instance = liveActivity.current ?? instances[0] ?? ThreadFlowActivity.start(props, 'threadflow://today');
     liveActivity.current = instance;
     instance.update(props).catch(() => undefined);
-  }, [ready, running.length, running[0]?.title, state.workSessionStartedAt, locale, t]);
-  useEffect(() => {
-    const subscription = addThreadFlowInteractionListener(event => {
-      if (event.source === 'ThreadFlowActivity' && event.target === 'pause-all') setState(old => {
-        const at = Date.now(); const next = settleTimerState(old, at);
-        if (!next.tasks.some(task => task.status === 'running')) return next;
-        return { ...next, tasks: next.tasks.map(task => task.status === 'running' ? { ...task, status: 'paused' as TaskStatus } : task), lastTaskActivityAt: undefined, workSessionStartedAt: undefined, breakReminderShown: false };
-      });
-    });
-    return () => subscription?.remove();
-  }, []);
+  }, [ready, running.length, running[0]?.title, state.breakState, state.workSessionStartedAt, Math.floor(now / 60000), locale, t]);
   const mutate = (id: string, status: TaskStatus) => setState(old => { const at = Date.now(); if (old.breakState) return old; const next = settleTimerState(old, at); const today = todayKey(at); const target = next.tasks.find(task => task.id === id); if (!target || (status === 'running' && target.day !== today)) return next; const sortOrder = groupLastOrder(next.tasks, target.day, status, id) + 1; const tasks = next.tasks.map(t => t.id === id ? { ...t, status, sortOrder, completedAt: status === 'completed' ? at : t.completedAt } : t); const hasRunning = tasks.some(task => task.status === 'running'); return { ...next, tasks, lastTaskActivityAt: hasRunning ? at : undefined, workSessionStartedAt: hasRunning ? (next.workSessionStartedAt ?? at) : undefined, breakReminderShown: hasRunning ? next.breakReminderShown : false }; });
   const api = useMemo<TimerApi>(() => ({ ...state, ready, now,
     addTask: (title, tagId) => setState(old => { const at = Date.now(); const next = settleTimerState(old, at); const day = todayKey(at); const validTagId = next.categories.some(tag => tag.id === tagId) ? tagId : uncategorizedTagId; return { ...next, tasks: [{ id: `${at}-${Math.random()}`, title: title.trim(), createdAt: at, status: 'pending', elapsedDuration: 0, allocatedDuration: 0, day, tagId: validTagId, sortOrder: groupFirstOrder(next.tasks, day, 'pending') - 1 }, ...next.tasks] }; }),

@@ -402,7 +402,11 @@ function WeekChart({
             <Text
               style={[styles.barLabel, selected && styles.barLabelSelected]}
             >
-              {day === today ? todayLabel : formatWeekday(locale, day)}
+              {day === today
+                ? locale === "fr"
+                  ? "Auj."
+                  : todayLabel
+                : formatWeekday(locale, day)}
             </Text>
           </Pressable>
         );

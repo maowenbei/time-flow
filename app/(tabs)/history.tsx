@@ -120,7 +120,9 @@ export default function History() {
                     <Text style={styles.dayTitle}>{dayTitle(day)}</Text>
                     <Text style={styles.dayMeta}>
                       {t("history.invested")} {formatShortTime(work, locale)} ·{" "}
-                      {t("history.completed")} {completed.length}
+                      {locale === "fr"
+                        ? t("history.completed", { count: completed.length })
+                        : `${t("history.completed")} ${completed.length}`}
                     </Text>
                   </View>
                   <Ionicons

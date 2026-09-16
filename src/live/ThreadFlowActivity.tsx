@@ -1,31 +1,35 @@
-import { Button, HStack, Text, VStack } from '@expo/ui/swift-ui';
-import { buttonStyle, font, foregroundStyle, padding } from '@expo/ui/swift-ui/modifiers';
+import { HStack, Text, VStack } from '@expo/ui/swift-ui';
+import { allowsTightening, fixedSize, font, foregroundStyle, frame, layoutPriority, lineLimit, minimumScaleFactor, monospacedDigit, padding, truncationMode } from '@expo/ui/swift-ui/modifiers';
 import { isRunningInExpoGo } from 'expo';
-import type { LiveActivityFactory, UserInteractionEvent } from 'expo-widgets';
+import type { LiveActivityFactory } from 'expo-widgets';
 
 export type ThreadFlowActivityProps = {
-  appName: string;
   taskLabel: string;
-  runningLabel: string;
-  pauseLabel: string;
+  tasksInProgressLabel: string;
   taskCount: number;
   startedAt: string;
+  tasks: Array<{ id: string; title: string; actualDuration: string }>;
 };
 
 const ThreadFlowActivity = (props: ThreadFlowActivityProps) => {
   'widget';
   const Timer = ({ startedAt }: Pick<ThreadFlowActivityProps, 'startedAt'>) => (
-    <Text timerInterval={{ lower: new Date(startedAt), upper: new Date('2100-01-01') }} countsDown={false} modifiers={[font({ weight: 'bold', design: 'rounded' })]} />
+    <Text timerInterval={{ lower: new Date(startedAt), upper: new Date('2100-01-01') }} countsDown={false} modifiers={[font({ size: 13, weight: 'semibold', design: 'rounded' }), monospacedDigit(), foregroundStyle('#8ACFC3'), lineLimit(1), minimumScaleFactor(0.8), frame({ width: 68, alignment: 'trailing' })]} />
   );
-  const taskSummary = props.taskCount === 1 ? props.taskLabel : `${props.runningLabel} ${props.taskCount}`;
+  const ActivitySummary = () => props.taskCount === 1
+    ? <Text modifiers={[font({ weight: 'semibold' }), foregroundStyle('#F2F2F2'), lineLimit(1), truncationMode('tail'), allowsTightening(true), layoutPriority(1), frame({ maxWidth: Infinity, alignment: 'leading' })]}>{props.taskLabel}</Text>
+    : <Text modifiers={[font({ weight: 'semibold' }), foregroundStyle('#F2F2F2'), lineLimit(1), truncationMode('tail'), allowsTightening(true), layoutPriority(1), frame({ maxWidth: Infinity, alignment: 'leading' })]}>{props.tasksInProgressLabel}</Text>;
+  const ExpandedTitle = () => <Text modifiers={[font({ weight: 'semibold' }), foregroundStyle('#F2F2F2'), lineLimit(1), truncationMode('tail'), allowsTightening(true), layoutPriority(1), frame({ maxWidth: Infinity, alignment: 'leading' })]}>{props.taskCount === 1 ? props.taskLabel : props.tasksInProgressLabel}</Text>;
+  const TaskRow = ({ task }: { task: ThreadFlowActivityProps['tasks'][number] }) => <HStack spacing={8} modifiers={[frame({ maxWidth: Infinity, alignment: 'leading' })]}><Text modifiers={[font({ weight: 'medium' }), foregroundStyle('#F2F2F2'), lineLimit(1), truncationMode('tail'), allowsTightening(true), layoutPriority(1), frame({ maxWidth: Infinity, alignment: 'leading' })]}>{task.title}</Text><Text modifiers={[font({ design: 'monospaced', weight: 'medium' }), monospacedDigit(), foregroundStyle('#E0E0E0'), lineLimit(1), fixedSize({ horizontal: true, vertical: false }), frame({ minWidth: 64, alignment: 'trailing' })]}>{task.actualDuration}</Text></HStack>;
+  const Header = () => <HStack spacing={8} modifiers={[frame({ maxWidth: Infinity, alignment: 'leading' })]}><ActivitySummary /><Timer startedAt={props.startedAt} /></HStack>;
   return {
-    banner: <VStack alignment="leading" spacing={6} modifiers={[padding({ all: 12 })]}><Text modifiers={[font({ weight: 'bold' }), foregroundStyle('#1F7A70')]}>{props.appName} · {props.runningLabel}</Text><Text>{taskSummary}</Text><Timer startedAt={props.startedAt} /><Button label={props.pauseLabel} target="pause-all" modifiers={[buttonStyle('borderedProminent')]} /></VStack>,
-    compactLeading: <Text modifiers={[font({ weight: 'bold' }), foregroundStyle('#1F7A70')]}>{props.appName}</Text>,
+    banner: <VStack alignment="leading" spacing={10} modifiers={[padding({ all: 12 })]}><Header />{props.tasks.map(task => <TaskRow key={task.id} task={task} />)}</VStack>,
+    compactLeading: <ActivitySummary />,
     compactTrailing: <Timer startedAt={props.startedAt} />,
-    minimal: <Text>⏸</Text>,
-    expandedLeading: <VStack alignment="leading" spacing={4} modifiers={[padding({ all: 12 })]}><Text modifiers={[font({ weight: 'bold' }), foregroundStyle('#1F7A70')]}>{props.appName}</Text><Text>{taskSummary}</Text></VStack>,
-    expandedTrailing: <VStack alignment="trailing" spacing={4} modifiers={[padding({ all: 12 })]}><Timer startedAt={props.startedAt} /><Text>{props.runningLabel}</Text></VStack>,
-    expandedBottom: <HStack spacing={10} modifiers={[padding({ all: 12 })]}><Text>{props.taskCount === 1 ? props.taskLabel : `${props.taskCount} ${props.runningLabel}`}</Text><Button label={props.pauseLabel} target="pause-all" modifiers={[buttonStyle('borderedProminent')]} /></HStack>,
+    minimal: <Timer startedAt={props.startedAt} />,
+    expandedLeading: <VStack alignment="leading" spacing={3} modifiers={[padding({ horizontal: 12, top: 12 })]}><ExpandedTitle /></VStack>,
+    expandedTrailing: <VStack alignment="trailing" spacing={3} modifiers={[padding({ horizontal: 12, top: 12 })]}><Timer startedAt={props.startedAt} /></VStack>,
+    expandedBottom: <VStack alignment="leading" spacing={8} modifiers={[padding({ horizontal: 12, top: 8, bottom: 12 })]}>{props.tasks.map(task => <TaskRow key={task.id} task={task} />)}</VStack>,
   };
 };
 
@@ -60,8 +64,4 @@ export function getThreadFlowActivity(): LiveActivityFactory<ThreadFlowActivityP
   const widgets = getExpoWidgets();
   liveActivity = widgets ? widgets.createLiveActivity<ThreadFlowActivityProps>('ThreadFlowActivity', ThreadFlowActivity) : null;
   return liveActivity;
-}
-
-export function addThreadFlowInteractionListener(listener: (event: UserInteractionEvent) => void) {
-  return getExpoWidgets()?.addUserInteractionListener(listener);
 }

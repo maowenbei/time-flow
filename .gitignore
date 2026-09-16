@@ -24,6 +24,7 @@ ios/
 
 # Local iOS packaging and release notes
 docs/ios-发布指南.md
+v1.1提审截图/
 .easignore
 .eas/
 *.mobileprovision

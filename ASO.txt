@@ -1,0 +1,180 @@
+时流 · 多线程计时
+真实记录每段工作时间 · 多任务计时
+并行计时,时间记录,工时记录,工作日志,正计时,番茄钟,专注,todo,时间统计,时间追踪,工时统计,每日任务,任务管理,待办,效率,生产力,自由职业,开发者,AI工作,工作时长,任务记录,时间分配
+
+------------------------------
+
+ThreadFlow · Parallel Timer
+Real Work Time · Task Timer
+
+us
+tracker,todo,daily,log,hours,pomodoro,focus,productivity,coding,developer,freelance,AI,multitask
+uk
+tracker,todo,daily,log,hours,focus,productivity,coding,developer,freelance,AI,agent,multitask
+canada
+tracker,todo,daily,log,hours,pomodoro,focus,productivity,coding,developer,freelance,workflow,planner
+Australia
+tracker,todo,daily,log,hours,pomodoro,focus,productivity,coding,developer,freelance,workflow,agent
+
+------------------------------
+
+| Apple localization        | 中文给你看           | App Name                         | Subtitle                         | Keywords                                                                                               |
+| ------------------------- | --------------- | -------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| **Spanish (Mexico)**      | **西班牙语（墨西哥）**   | `ThreadFlow · Control de tiempo` | `Trabajo real · multitarea`      | `tareas,horas,registro,pomodoro,enfoque,productividad,freelance,desarrollador,paralelo,seguimiento`    |
+| **Spanish (Spain)**       | **西班牙语（西班牙）**   | `ThreadFlow · Control de tiempo` | `Trabajo real · multitarea`      | `tareas,horas,registro,pomodoro,enfoque,productividad,autónomo,desarrollador,paralelo,seguimiento`     |
+| **French**                | **法语（主要对应法国等）** | `ThreadFlow · Suivi du temps`    | `Travail réel · multitâche`      | `minuteur,tâches,heures,pomodoro,concentration,productivité,freelance,développeur,parallèle,journal`   |
+| **French (Canada)**       | **法语（加拿大）**     | `ThreadFlow · Suivi du temps`    | `Travail réel · multitâche`      | `minuteur,tâches,heures,pomodoro,focus,productivité,freelance,développeur,parallèle,journal,quotidien` |
+| **Portuguese (Brazil)**   | **葡萄牙语（巴西）**    | `ThreadFlow · Controle de tempo` | `Trabalho real · multitarefa`    | `tarefas,horas,registro,pomodoro,foco,produtividade,freelancer,desenvolvedor,paralelo,diário,gestão`   |
+| **Portuguese (Portugal)** | **葡萄牙语（葡萄牙）**   | `ThreadFlow · Controlo de tempo` | `Trabalho real · multitarefa`    | `tarefas,horas,registo,pomodoro,foco,produtividade,freelancer,programador,paralelo,diário,gestão`      |
+| **German**                | **德语**          | `ThreadFlow · Zeiterfassung`     | `Arbeitszeit · mehrere Aufgaben` | `timer,stunden,pomodoro,fokus,produktivität,todo,freelancer,entwickler,parallel,protokoll,tagesplan`   |
+| **Italian**               | **意大利语**        | `ThreadFlow · Timer lavoro`      | `Tempo reale · più attività`     | `ore,pomodoro,focus,produttività,freelance,sviluppatore,gestione,registro,parallelo,agenda,compiti`    |
+
+
+
+推广文本：
+工作不总是一件接一件。让多个任务同时运行，自动处理重叠时间，记录你真正投入工作的每一分钟。现在支持灵动岛、实时活动与轻量提醒。
+
+-------------------------------------
+
+中文描述：
+时流是一款为真实工作方式设计的轻量工作计时器。
+
+它把每日任务和时间记录放在一起，但不要求你按照固定的番茄时间工作，也不会把简单的计时变成复杂的项目管理。
+
+开始做事时点一下计时，需要暂停、切换或完成时再操作即可。一个任务可以分多次完成，多个任务也可以同时进行。
+
+【多个任务，同时计时】
+
+AI Agent 还在运行，你已经开始修改另一段代码；
+文件仍在处理，你同时开始整理内容；
+一个任务等待结果时，你继续推进另一件事。
+
+时流允许这些任务同时保持计时，不需要为了开始下一件事而强行结束上一件事。
+
+【重叠时间，不重复计算】
+
+如果两个任务同时运行 30 分钟，你实际经过的工作时间仍然是 30 分钟，而不是 60 分钟。
+
+时流会自动处理重叠的时间，让每天的总投入更接近真实经过的时间。
+
+【每日任务 + 工作计时】
+
+把今天准备做的事情放进任务列表。
+
+开始工作时计时，暂停、继续或完成都由你自己决定。一个任务可以跨多个时间段完成，每天做过的事情和实际投入都会留下记录。
+
+【不强制番茄时间】
+
+没有必须完成的 25 分钟，也没有强制休息。
+
+工作 5 分钟也可以，连续投入 2 小时也可以。时流跟随你的工作节奏，而不是要求你适应计时器。
+
+【灵动岛与实时活动】
+
+任务运行时，可以通过实时活动快速查看当前计时状态，在支持的设备上也可以从灵动岛查看正在进行的任务。
+
+【轻量提醒】
+
+可以设置每天的工作开始提醒。
+
+当一个任务持续运行较长时间时，时流也可以提醒你检查当前状态，避免忘记停止计时，也顺便提醒自己适当休息。
+
+【回看真正投入的时间】
+
+通过最近 7 天和月度统计，查看：
+
+· 每天实际投入了多少时间
+· 时间主要花在哪些分类
+· 最近完成了哪些事情
+
+【简单、私密】
+
+无需注册账号。
+
+任务、分类、计时记录和自定义分类图标均保存在设备本地。
+
+时流想做的事情很简单：
+
+记录今天做了什么，以及真正花了多少时间。
+
+-------------------------------------
+此版本新增内容
+时流 1.1
+新增实时活动与灵动岛计时展示
+· 新增工作开始提醒与长时间持续计时提醒
+· 优化历史记录的时间与任务状态修改
+· 优化统计页面，可进一步查看分类下的任务记录
+· 优化多语言与部分界面细节
+· 修复若干计时、状态同步和显示问题
+
+
+-----------------------------------------
+en 推广文本，小于170字符
+Run multiple timers at once without double-counting overlapping time. Track real work with Live Activities and lightweight reminders—no forced Pomodoro sessions.
+
+en介绍
+ThreadFlow is a lightweight work timer designed for the way real work actually happens.
+
+It combines daily tasks and time tracking without forcing you into fixed Pomodoro sessions or turning simple time tracking into complex project management.
+
+Start a timer when you begin working. Pause, resume, switch, or finish whenever you want. A task can span multiple sessions, and multiple tasks can run at the same time.
+
+[Run multiple tasks at once]
+
+An AI agent is still running while you start working on something else.
+
+A file is processing while you move on to writing, planning, or another task.
+
+One task is waiting for a result while you continue with the next.
+
+ThreadFlow lets these tasks keep running together. You do not need to stop one timer just to start another.
+
+[No double-counted time]
+
+If two tasks run together for 30 minutes, your actual elapsed work time is still 30 minutes — not 60.
+
+ThreadFlow automatically accounts for overlapping sessions so your daily total better reflects the time that actually passed.
+
+[Daily tasks + work timer]
+
+Add what you want to work on today and start timing with one tap.
+
+Pause, resume, or finish whenever you need to. A task can span multiple sessions, and your completed work stays in your daily history.
+
+[No forced Pomodoro sessions]
+
+There is no required 25-minute focus block and no forced break.
+
+Work for five minutes or two hours. ThreadFlow follows your workflow instead of forcing you into a fixed routine.
+
+[Live Activities]
+
+Keep an eye on active timers through Live Activities and, on supported devices, the Dynamic Island.
+
+Quickly check what is running without returning to the app.
+
+[Lightweight reminders]
+
+Set a reminder to start tracking your work.
+
+ThreadFlow can also remind you when a timer has been running continuously for a long time, helping you check whether it should still be running or whether it is time for a break.
+
+[See where your time went]
+
+Review your actual work time over the last 7 days or by month.
+
+See how much time you spent each day, how your time was distributed across categories, and what you completed.
+
+[Simple and private]
+
+No account is required.
+
+Tasks, categories, timer records, and custom category icons are stored locally on your device.
+
+ThreadFlow is built to answer two simple questions:
+
+What did I work on today?
+
+How much time did I actually spend?
+
+
