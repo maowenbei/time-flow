@@ -22,11 +22,24 @@ const builtInImages: Record<string, ImageSourcePropType | undefined> = {
   rest: require('../../assets/task-tags/rest.png'),
   commute: require('../../assets/task-tags/commute.png'),
   favorite: require('../../assets/task-tags/favorite.png'),
+  target: require('../../assets/task-tags/target.png'),
+  wallet: require('../../assets/task-tags/wallet.png'),
+  music: require('../../assets/task-tags/music.png'),
+  meal: require('../../assets/task-tags/meal.png'),
+  idea: require('../../assets/task-tags/idea.png'),
+  game: require('../../assets/task-tags/game.png'),
+  coffee: require('../../assets/task-tags/coffee.png'),
+  camera: require('../../assets/task-tags/camera.png'),
+  nature: require('../../assets/task-tags/nature.png'),
+  palette: require('../../assets/task-tags/palette.png'),
+  uncategorized: require('../../assets/task-tags/palette.png'),
 };
 
 export const systemIconChoices = [
   { id: 'work' }, { id: 'study' }, { id: 'exercise' }, { id: 'life' }, { id: 'calendar' },
-  { id: 'health' }, { id: 'shopping' }, { id: 'rest' }, { id: 'commute' }, { id: 'favorite' },
+  { id: 'health' }, { id: 'shopping' }, { id: 'rest' }, { id: 'commute' }, { id: 'target' },
+  { id: 'wallet' }, { id: 'music' }, { id: 'meal' }, { id: 'idea' }, { id: 'game' },
+  { id: 'coffee' }, { id: 'camera' }, { id: 'nature' }, { id: 'favorite' }, { id: 'palette' },
 ] as const;
 
 export function getSystemIconImage(systemIconId?: string) {
@@ -48,6 +61,17 @@ const legacyChineseLabels: Record<string, string> = { work: '工作', study: '�
 const builtInLabels = {
   en: { work: 'Work', study: 'Study', exercise: 'Exercise', life: 'Life', uncategorized: 'Uncategorized' },
   'zh-CN': legacyChineseLabels,
+  'zh-Hant': { work: '工作', study: '學習', exercise: '運動', life: '生活', uncategorized: '未分類' },
+  fr: { work: 'Travail', study: 'Études', exercise: 'Sport', life: 'Vie', uncategorized: 'Sans catégorie' },
+  es: { work: 'Trabajo', study: 'Estudio', exercise: 'Ejercicio', life: 'Vida', uncategorized: 'Sin categoría' },
+  'pt-BR': { work: 'Trabalho', study: 'Estudo', exercise: 'Exercício', life: 'Vida', uncategorized: 'Sem categoria' },
+  it: { work: 'Lavoro', study: 'Studio', exercise: 'Esercizio', life: 'Vita', uncategorized: 'Senza categoria' },
+  ru: { work: 'Работа', study: 'Учёба', exercise: 'Спорт', life: 'Жизнь', uncategorized: 'Без категории' },
+  tr: { work: 'İş', study: 'Çalışma', exercise: 'Egzersiz', life: 'Yaşam', uncategorized: 'Kategorisiz' },
+  id: { work: 'Kerja', study: 'Belajar', exercise: 'Olahraga', life: 'Hidup', uncategorized: 'Tanpa kategori' },
+  ja: { work: '仕事', study: '学習', exercise: '運動', life: '生活', uncategorized: '未分類' },
+  ko: { work: '업무', study: '학습', exercise: '운동', life: '생활', uncategorized: '미분류' },
+  de: { work: 'Arbeit', study: 'Lernen', exercise: 'Sport', life: 'Leben', uncategorized: 'Nicht kategorisiert' },
 } as const;
 
 export function createStarterTaskTags() {
@@ -58,7 +82,7 @@ export function isBuiltInTagId(id: string) { return builtInTagIds.has(id); }
 
 export function isLegacyBuiltInLabel(id: string, label: string | undefined) { return legacyChineseLabels[id] === label; }
 
-export function getTaskTagLabel(tag: TaskTag, locale: 'zh-CN' | 'en') {
+export function getTaskTagLabel(tag: TaskTag, locale: keyof typeof builtInLabels) {
   if (isBuiltInTagId(tag.id) && !tag.isCustomLabel) return builtInLabels[locale][tag.id as keyof typeof builtInLabels.en] ?? tag.id;
   return tag.label || builtInLabels[locale].uncategorized;
 }

@@ -7,7 +7,7 @@ import { colors } from '../constants/colors';
 
 export function TaskTagIcon({ tagId, size = 24 }: { tagId?: TaskTagId; size?: number }) {
   const { categories } = useTimer(); const { locale } = useI18n(); const tag = getTaskTag(tagId, categories); const label = getTaskTagLabel(tag, locale);
-  if (tag.image) return <Image source={tag.image} style={{ width: size, height: size, transform: [{ scale: 1.2 }] }} resizeMode="contain" accessibilityLabel={label} />;
+  if (tag.image) return <Image source={tag.image} style={tag.iconUri ? { width: size, height: size, borderRadius: Math.round(size * 0.24) } : { width: size, height: size, transform: [{ scale: 1.2 }] }} resizeMode={tag.iconUri ? "cover" : "contain"} accessibilityLabel={label} />;
   return <View style={[styles.uncategorized, { width: size, height: size, borderRadius: size / 2 }]} accessibilityLabel={label}><View style={[styles.dot, { backgroundColor: tag.color }]} /></View>;
 }
 

@@ -18,11 +18,24 @@
         }
       ],
       "expo-font",
-      "expo-localization"
+      "expo-localization",
+      "expo-widgets",
+      "expo-notifications"
     ],
     "locales": {
       "en": "./locales/en.json",
-      "zh-CN": "./locales/zh-CN.json"
+      "zh-CN": "./locales/zh-CN.json",
+      "zh-Hant": "./locales/zh-Hant.json",
+      "fr": "./locales/fr.json",
+      "es": "./locales/es.json",
+      "pt-BR": "./locales/pt-BR.json",
+      "it": "./locales/it.json",
+      "ru": "./locales/ru.json",
+      "tr": "./locales/tr.json",
+      "id": "./locales/id.json",
+      "ja": "./locales/ja.json",
+      "ko": "./locales/ko.json",
+      "de": "./locales/de.json"
     },
     "ios": {
       "supportsTablet": false,
