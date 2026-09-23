@@ -2,25 +2,41 @@
 
 [访问官网 / Visit website](https://www.muzhistudy.com/threadflow/index.html)
 
+> 当前发布版本为 **iOS App**，支持 iPhone；Android 与 Web 命令仅用于项目开发与预览。
+
+## 下载 / Download
+
+| 来源 / Source | 中国区 App Store | United States App Store |
+| --- | --- | --- |
+| GitHub | [下载时流](https://apps.apple.com/cn/app/id6805435326?pt=128994962&ct=github&mt=8) | [Download ThreadFlow](https://apps.apple.com/us/app/threadflow-parallel-timer/id6805435326?pt=128994962&ct=github&mt=8) |
+
 ## 提审截图 / Screenshots
 
 ### 中文
 
-| 今天 | 7 天统计 | 本月统计 | 记录 |
+| 今日任务 | 实时活动 | 统计 | 历史记录 |
 | --- | --- | --- | --- |
-| ![今天](<提审截图/今天.png>) | ![7天统计](<提审截图/7天统计.png>) | ![本月统计](<提审截图/本月统计.png>) | ![记录](<提审截图/记录.png>) |
+| ![今日任务](<提审截图/zh-cn/1.png>) | ![实时活动](<提审截图/zh-cn/2.png>) | ![统计](<提审截图/zh-cn/3.png>) | ![历史记录](<提审截图/zh-cn/4.png>) |
 
 ### English
 
-| Today | 7-day stats | Monthly stats | History |
+| Today | Live Activities | Statistics | History |
 | --- | --- | --- | --- |
-| ![Today](<提审截图/today.png>) | ![7-day stats](<提审截图/stats7day.png>) | ![Monthly stats](<提审截图/statsmonth.png>) | ![History](<提审截图/history.png>) |
+| ![Today](<提审截图/en/1.png>) | ![Live Activities](<提审截图/en/2.png>) | ![Statistics](<提审截图/en/3.png>) | ![History](<提审截图/en/4.png>) |
 
-时流（ThreadFlow）是一款轻量、非强制的每日工作计时应用。写下要做的事，开始时轻点一下；一天结束时，回看真实投入的时间。
+时流（ThreadFlow）是一款为真实工作方式设计的轻量工作计时应用。写下今天要做的事，开始时轻点一下；一天结束时，回看真正投入的时间。
 
 它不使用番茄钟，也不要求复杂的任务拆分或项目管理。多个任务可同时计时，而同一段真实经过时间只会被公平分配一次。
 
-## 功能
+ThreadFlow is a lightweight work timer for the way real work happens. Run multiple task timers at once, without double-counting overlapping time. Track what you worked on and how much time you actually spent—without forced Pomodoro sessions or heavyweight project management.
+
+## v1.1 功能 / What’s new in v1.1
+
+- **实时活动与灵动岛 / Live Activities & Dynamic Island**：任务计时运行时，可在锁屏、实时活动和支持设备的灵动岛查看状态。
+- **轻量提醒 / Lightweight reminders**：设置每日开始工作提醒；计时持续过久时，也会提醒你检查任务状态或适当休息。
+- 优化历史记录的时间与任务状态修改、统计页分类任务查看、多语言与界面细节，并修复计时和状态同步问题。
+
+## 核心功能 / Core features
 
 - 快速创建、开始、暂停、继续、完成和编辑任务
 - 支持多个任务并行计时，并保证分配时长总和等于真实经过时长
@@ -29,6 +45,10 @@
 - 任务分类：使用内置图标或从相册选择自定义图标
 - 复制昨日任务，减少重复录入
 - 数据仅保存在设备本地；不需要登录，也不上传数据
+
+## 反馈 / Feedback
+
+欢迎通过 [GitHub Issues](https://github.com/maowenbei/time-flow/issues) 提交 Bug、功能建议或使用反馈；也可先查看 [已有 Issues](https://github.com/maowenbei/time-flow/issues)。
 
 ## 技术栈
 
