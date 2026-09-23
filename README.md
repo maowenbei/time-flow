@@ -1,69 +1,59 @@
-# 时流 / ThreadFlow
+# ThreadFlow
 
-[访问官网 / Visit website](https://www.muzhistudy.com/threadflow/index.html)
+[English](README.md) | [简体中文](README.zh-CN.md)
 
-> 当前发布版本为 **iOS App**，支持 iPhone；Android 与 Web 命令仅用于项目开发与预览。
+[Visit website](https://www.muzhistudy.com/threadflow/index.html)
 
-## 下载 / Download
+> The current release is an **iOS app** for iPhone. Android and web commands below are for development and preview only.
 
-| 来源 / Source | 中国区 App Store | United States App Store |
+## Download
+
+| Source | China App Store | United States App Store |
 | --- | --- | --- |
-| GitHub | [下载时流](https://apps.apple.com/cn/app/id6805435326?pt=128994962&ct=github&mt=8) | [Download ThreadFlow](https://apps.apple.com/us/app/threadflow-parallel-timer/id6805435326?pt=128994962&ct=github&mt=8) |
+| GitHub | [Download 时流](https://apps.apple.com/cn/app/id6805435326?pt=128994962&ct=github&mt=8) | [Download ThreadFlow](https://apps.apple.com/us/app/threadflow-parallel-timer/id6805435326?pt=128994962&ct=github&mt=8) |
 
-## 提审截图 / Screenshots
-
-### 中文
-
-| 今日任务 | 实时活动 | 统计 | 历史记录 |
-| --- | --- | --- | --- |
-| ![今日任务](<提审截图/zh-cn/1.png>) | ![实时活动](<提审截图/zh-cn/2.png>) | ![统计](<提审截图/zh-cn/3.png>) | ![历史记录](<提审截图/zh-cn/4.png>) |
-
-### English
+## Screenshots
 
 | Today | Live Activities | Statistics | History |
 | --- | --- | --- | --- |
 | ![Today](<提审截图/en/1.png>) | ![Live Activities](<提审截图/en/2.png>) | ![Statistics](<提审截图/en/3.png>) | ![History](<提审截图/en/4.png>) |
 
-时流（ThreadFlow）是一款为真实工作方式设计的轻量工作计时应用。写下今天要做的事，开始时轻点一下；一天结束时，回看真正投入的时间。
+ThreadFlow is a lightweight work timer for the way real work happens. Run multiple task timers at once without double-counting overlapping time. Track what you worked on and how much time you actually spent—without forced Pomodoro sessions or heavyweight project management.
 
-它不使用番茄钟，也不要求复杂的任务拆分或项目管理。多个任务可同时计时，而同一段真实经过时间只会被公平分配一次。
+## What’s new in v1.1
 
-ThreadFlow is a lightweight work timer for the way real work happens. Run multiple task timers at once, without double-counting overlapping time. Track what you worked on and how much time you actually spent—without forced Pomodoro sessions or heavyweight project management.
+- **Live Activities & Dynamic Island:** View active timer status from the Lock Screen, Live Activities, and, on supported devices, the Dynamic Island.
+- **Lightweight reminders:** Set a daily reminder to start tracking. Long-running timers can also remind you to check their status or take a break.
+- Improved editing of history times and task states, category drill-down in statistics, localization, and interface details; fixed timing and state-sync issues.
 
-## v1.1 功能 / What’s new in v1.1
+## Core features
 
-- **实时活动与灵动岛 / Live Activities & Dynamic Island**：任务计时运行时，可在锁屏、实时活动和支持设备的灵动岛查看状态。
-- **轻量提醒 / Lightweight reminders**：设置每日开始工作提醒；计时持续过久时，也会提醒你检查任务状态或适当休息。
-- 优化历史记录的时间与任务状态修改、统计页分类任务查看、多语言与界面细节，并修复计时和状态同步问题。
+- Quickly create, start, pause, resume, complete, and edit tasks
+- Run multiple task timers at once while ensuring allocated time never exceeds real elapsed time
+- See both timer duration and actual allocated work time
+- Today’s tasks, history, and time statistics
+- Organize tasks with built-in icons or custom icons from your photo library
+- Copy yesterday’s tasks to avoid repetitive entry
+- All data stays on your device—no account or uploads required
 
-## 核心功能 / Core features
+## Feedback
 
-- 快速创建、开始、暂停、继续、完成和编辑任务
-- 支持多个任务并行计时，并保证分配时长总和等于真实经过时长
-- 显示运行时长与实际投入时长
-- 今日任务、历史记录和时间统计
-- 任务分类：使用内置图标或从相册选择自定义图标
-- 复制昨日任务，减少重复录入
-- 数据仅保存在设备本地；不需要登录，也不上传数据
+Submit bugs, feature requests, or other feedback through [GitHub Issues](https://github.com/maowenbei/time-flow/issues), or browse the [existing issues](https://github.com/maowenbei/time-flow/issues).
 
-## 反馈 / Feedback
+## Tech stack
 
-欢迎通过 [GitHub Issues](https://github.com/maowenbei/time-flow/issues) 提交 Bug、功能建议或使用反馈；也可先查看 [已有 Issues](https://github.com/maowenbei/time-flow/issues)。
+React Native, Expo, Expo Router, and TypeScript.
 
-## 技术栈
+## Getting started
 
-React Native、Expo、Expo Router 和 TypeScript。
-
-## 开始使用
-
-环境要求：Node.js 20 LTS 或更高版本。若要在原生模拟器或真机中运行，还需要 Android Studio 或 Xcode。
+Requirements: Node.js 20 LTS or later. Android Studio or Xcode is also needed to run on a native simulator or device.
 
 ```powershell
 npm install
 npm start
 ```
 
-常用命令：
+Common commands:
 
 ```powershell
 npm run android
@@ -72,22 +62,22 @@ npm run web
 npm run typecheck
 ```
 
-### 用 Expo Go 在 iPhone 预览
+### Preview on iPhone with Expo Go
 
-在项目 SDK 与 iPhone 上安装的 Expo Go 版本兼容时，可于项目根目录执行 `npm start`，再用 Expo Go 扫描终端显示的二维码预览。手机和电脑应连接同一网络；若无法连接，可执行 `npx expo start --tunnel` 后重新扫码。
+When the project SDK is compatible with the Expo Go version installed on your iPhone, run `npm start` in the project root and scan the QR code shown in the terminal. Your phone and computer must be on the same network. If that does not work, run `npx expo start --tunnel` and scan again.
 
-本项目使用 Expo SDK 57；当前 App Store 版 iOS Expo Go 仅支持 SDK 54，因此 iPhone 请使用 Development Build 或 TestFlight 进行真机预览。  https://sign.expo.dev/ 下载指定SDK版本的Expo Go。
+This project uses Expo SDK 57, while the App Store release of iOS Expo Go currently supports only SDK 54. For on-device preview, use a Development Build or TestFlight. You can download a compatible Expo Go version from https://sign.expo.dev/.
 
-## 计时规则
+## Timing rules
 
-时流（ThreadFlow）在任务状态变化时以时间戳结算上一段时间，而不是将 `setInterval` 作为计时数据来源。因此应用切到后台、锁屏或重新打开后，计时仍可根据上次状态恢复。
+ThreadFlow settles the preceding interval using timestamps whenever a task changes state, rather than using `setInterval` as its timing data source. This means timers can recover from their previous state even when the app goes into the background, the phone is locked, or the app is reopened.
 
-例如：A 在 10:00 开始，B 在 10:20 开始；B 在 10:50 完成，A 在 11:00 完成。A 获得 45 分钟，B 获得 15 分钟，总计仍为真实经过的 60 分钟。无法整除的毫秒会按稳定顺序分配，以避免时间损失。
+For example: A starts at 10:00, B starts at 10:20, B completes at 10:50, and A completes at 11:00. A receives 45 minutes and B receives 15 minutes, for a total of the actual 60 minutes elapsed. Milliseconds that cannot be divided evenly are allocated in a stable order so no time is lost.
 
-## 隐私
+## Privacy
 
-任务、分类和计时数据使用设备本地的 AsyncStorage 保存。若为分类选择相册图片，图片会在本机压缩后保存；应用不会上传这些数据。
+Tasks, categories, and timing data are stored locally with AsyncStorage. If you choose a photo-library image for a category, it is compressed and saved on the device. The app does not upload this data.
 
-## 开源协议
+## License
 
-本项目采用 [MIT License](LICENSE)。
+This project is licensed under the [MIT License](LICENSE).
