@@ -236,11 +236,27 @@ const duplicateTaskCopy: Record<AppLocale, string> = {
   de: 'An diesem Tag gibt es bereits eine Aufgabe mit diesem Namen und dieser Kategorie. Ändere den Namen oder die Kategorie.',
 };
 
+const adaptivePanelCopy: Record<AppLocale, { recordDates: string; keypadClear: string; keypadBackspace: string }> = {
+  'zh-CN': { recordDates: '日期列表', keypadClear: '清空', keypadBackspace: '退格' },
+  'zh-Hant': { recordDates: '日期列表', keypadClear: '清空', keypadBackspace: '退格' },
+  en: { recordDates: 'Dates', keypadClear: 'Clear', keypadBackspace: 'Backspace' },
+  fr: { recordDates: 'Liste des dates', keypadClear: 'Effacer', keypadBackspace: 'Retour arrière' },
+  es: { recordDates: 'Lista de fechas', keypadClear: 'Borrar', keypadBackspace: 'Retroceso' },
+  'pt-BR': { recordDates: 'Lista de datas', keypadClear: 'Limpar', keypadBackspace: 'Apagar dígito' },
+  it: { recordDates: 'Elenco date', keypadClear: 'Cancella', keypadBackspace: 'Indietro' },
+  ru: { recordDates: 'Список дат', keypadClear: 'Очистить', keypadBackspace: 'Удалить цифру' },
+  tr: { recordDates: 'Tarih listesi', keypadClear: 'Temizle', keypadBackspace: 'Geri sil' },
+  id: { recordDates: 'Daftar tanggal', keypadClear: 'Hapus', keypadBackspace: 'Hapus digit' },
+  ja: { recordDates: '日付一覧', keypadClear: 'クリア', keypadBackspace: '一文字削除' },
+  ko: { recordDates: '날짜 목록', keypadClear: '지우기', keypadBackspace: '한 자리 삭제' },
+  de: { recordDates: 'Datumsliste', keypadClear: 'Leeren', keypadBackspace: 'Rücktaste' },
+};
+
 export const translations = Object.fromEntries(Object.entries(baseTranslations).map(([locale, base]) => {
   const merged = mergeLocale(base, localeAdditions[locale as AppLocale], locale as AppLocale);
   const history = merged.history as Translation;
   const reminders = merged.reminders as Translation;
-  return [locale, { ...merged, today: { ...(merged.today as Translation), duplicateTask: duplicateTaskCopy[locale as AppLocale] }, reminders: { ...reminders, title: reminderTitles[locale as AppLocale], longHint: longReminderHints[locale as AppLocale] }, history: { ...history, statuses: { ...(history.statuses as Translation), paused: pausedHistoryLabels[locale as AppLocale] } } }];
+  return [locale, { ...merged, adaptive: adaptivePanelCopy[locale as AppLocale], today: { ...(merged.today as Translation), duplicateTask: duplicateTaskCopy[locale as AppLocale] }, reminders: { ...reminders, title: reminderTitles[locale as AppLocale], longHint: longReminderHints[locale as AppLocale] }, history: { ...history, statuses: { ...(history.statuses as Translation), paused: pausedHistoryLabels[locale as AppLocale] } } }];
 })) as unknown as Record<AppLocale, Translation>;
 
 function flattenedKeys(value: Translation, prefix = ''): string[] {

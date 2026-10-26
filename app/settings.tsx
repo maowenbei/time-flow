@@ -1,3 +1,6 @@
+import { useAdaptiveLayout } from '../src/hooks/useAdaptiveLayout';
+import { AdaptivePageFrame } from '../src/components/adaptive/AdaptivePageFrame';
+import { AdaptiveModalFrame } from '../src/components/adaptive/AdaptiveModalFrame';
 import { Ionicons } from "@expo/vector-icons";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
@@ -47,6 +50,7 @@ const reminderMinutes = Array.from({ length: 12 }, (_, index) => index * 5);
 const wheelItemHeight = 44;
 
 export default function Settings() {
+  const layout = useAdaptiveLayout();
   useFocusEffect(useCallback(() => { track('settings_viewed'); }, []));
   const router = useRouter();
   const timer = useTimer();
@@ -257,7 +261,7 @@ export default function Settings() {
   };
   return (
     <>
-      <ScrollView style={styles.page} contentContainerStyle={styles.content}>
+      <AdaptivePageFrame layout={layout} singleColumn style={styles.page} contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Pressable
             onPress={() => {
@@ -364,10 +368,9 @@ export default function Settings() {
           </View>
           <Ionicons name="chevron-forward" size={20} color="#8AA09A" />
         </Pressable>
-      </ScrollView>
+      </AdaptivePageFrame>
       <Modal visible={categoryVisible} transparent animationType="slide" onRequestClose={categoryEditorVisible ? returnToCategoryList : closeCategorySheet}>
-        <View style={styles.backdrop}>
-          <Pressable style={styles.backdropDismiss} onPress={categoryEditorVisible ? returnToCategoryList : closeCategorySheet} />
+        <AdaptiveModalFrame layout={layout} legacyBackdrop={<View style={styles.backdrop}><Pressable style={styles.backdropDismiss} onPress={categoryEditorVisible ? returnToCategoryList : closeCategorySheet} /></View>} onDismiss={categoryEditorVisible ? returnToCategoryList : closeCategorySheet} internalScroll>
           <View style={styles.categorySheet}>
             <Text style={styles.sheetTitle}>{t("settings.categoryManagement")}</Text>
             <Text style={styles.sheetSubtitle}>{t("settings.categoryNote")}</Text>
@@ -426,11 +429,10 @@ export default function Settings() {
               </Animated.View>
             ) : null}
           </View>
-        </View>
+        </AdaptiveModalFrame>
       </Modal>
       <Modal visible={languageVisible} transparent animationType="slide" onRequestClose={() => setLanguageVisible(false)}>
-        <View style={styles.backdrop}>
-          <Pressable style={styles.backdropDismiss} onPress={() => setLanguageVisible(false)} />
+        <AdaptiveModalFrame layout={layout} legacyBackdrop={<View style={styles.backdrop}><Pressable style={styles.backdropDismiss} onPress={() => setLanguageVisible(false)} /></View>} onDismiss={() => setLanguageVisible(false)} internalScroll>
           <ScrollView style={styles.languageSheet} contentContainerStyle={styles.languageSheetContent} showsVerticalScrollIndicator={false}>
             <Text style={styles.sheetTitle}>{languageCopy.title}</Text>
             <Text style={styles.sheetSubtitle}>{languageCopy.subtitle}</Text>
@@ -441,11 +443,10 @@ export default function Settings() {
               </Pressable>
             ))}
           </ScrollView>
-        </View>
+        </AdaptiveModalFrame>
       </Modal>
       <Modal visible={timePickerVisible} transparent animationType="slide" onRequestClose={() => setTimePickerVisible(false)}>
-        <View style={styles.backdrop}>
-          <Pressable style={styles.backdropDismiss} onPress={() => setTimePickerVisible(false)} />
+        <AdaptiveModalFrame layout={layout} legacyBackdrop={<View style={styles.backdrop}><Pressable style={styles.backdropDismiss} onPress={() => setTimePickerVisible(false)} /></View>} onDismiss={() => setTimePickerVisible(false)}>
           <View style={styles.timeSheet}>
             <Text style={styles.sheetTitle}>{t("reminders.time")}</Text>
             <View style={styles.timePickerRow}>
@@ -476,7 +477,7 @@ export default function Settings() {
               <Pressable onPress={saveReminderTime} style={styles.save}><Text style={styles.saveText}>{t("common.save")}</Text></Pressable>
             </View>
           </View>
-        </View>
+        </AdaptiveModalFrame>
       </Modal>
     </>
   );
@@ -508,7 +509,8 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     color: "#183B35",
   },
-  titleWrap: { position: "absolute", left: 0, right: 0, height: 42, alignItems: "center", justifyContent: "center" },
+  // Leave room for the back button and its hitSlop on both sides to keep the title centered.
+  titleWrap: { position: "absolute", left: 49, right: 49, height: 42, alignItems: "center", justifyContent: "center" },
   titleText: { fontSize: 19, fontWeight: "800", color: "#183B35" },
   sectionTitle: {
     ...typography.sectionTitle,

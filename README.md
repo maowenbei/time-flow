@@ -6,6 +6,8 @@
 
 > The current release is an **iOS app** for iPhone. Android and web commands below are for development and preview only.
 
+iPad adaptive layouts are implemented in source, pending device and TestFlight acceptance. See the [iPad compatibility checklist](docs/ipad-compatibility.md) for installation and manual validation steps (Chinese).
+
 ## Download
 
 | Source | China App Store | United States App Store |

@@ -11,6 +11,14 @@ import { migrateUsageDays, recordUsageDay } from '../services/reviewUsage';
 
 export type TaskStatus = 'pending' | 'running' | 'paused' | 'completed';
 export type Task = { id: string; title: string; createdAt: number; status: TaskStatus; elapsedDuration: number; allocatedDuration: number; completedAt?: number; day: string; tagId: TaskTagId; sortOrder: number };
+export function isValidTaskDay(day: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return false;
+  const [year, month, date] = day.split('-').map(Number);
+  const parsed = new Date(0);
+  parsed.setFullYear(year, month - 1, date);
+  parsed.setHours(12, 0, 0, 0);
+  return year > 0 && parsed.getFullYear() === year && parsed.getMonth() === month - 1 && parsed.getDate() === date;
+}
 /** Task identity is scoped to its local day and category, regardless of status. */
 export function hasDuplicateTask(tasks: Task[], day: string, title: string, tagId: TaskTagId, excludingId?: string) {
   return tasks.some(task => task.id !== excludingId && task.day === day && task.tagId === tagId && task.title.trim() === title.trim());
@@ -35,7 +43,7 @@ export type BreakState = { startedAt: number; taskIds: string[] };
 export type HintId = 'today-actions' | 'history-actions' | 'stats-allocation';
 export type ReminderSettings = { startEnabled: boolean; startFrequency: 'weekdays' | 'daily'; startHour: number; startMinute: number; longEnabled: boolean };
 type TimerState = { usageDays: string[]; tasks: Task[]; categories: TaskTag[]; lastTimestamp: number; breakState?: BreakState; workSessionStartedAt?: number; lastTaskActivityAt?: number; breakReminderShown?: boolean; reminders: ReminderSettings; dismissedHints: HintId[] };
-type TimerApi = TimerState & { ready: boolean; now: number; addTask: (title: string, tagId: TaskTagId) => void; start: (id: string) => void; pause: (id: string) => void; complete: (id: string) => void; restart: (id: string) => void; pauseAll: () => void; setReminders: (settings: ReminderSettings) => void; setReminderDebugActivity: (at?: number) => void; restoreHints: () => void; startBreak: () => void; endBreak: () => void; dismissBreakReminder: () => void; dismissHint: (hint: HintId) => void; copyLatestTasks: () => void; updateTask: (id: string, title: string, tagId: TaskTagId) => void; updateAllocatedDuration: (id: string, allocatedDuration: number) => void; addCategory: (label: string, iconUri?: string, systemIconId?: string) => void; updateCategory: (id: string, label: string, iconUri?: string, systemIconId?: string) => void; deleteCategory: (id: string) => void; remove: (id: string) => void };
+type TimerApi = TimerState & { ready: boolean; now: number; addTask: (title: string, tagId: TaskTagId) => void; addDebugTask: (title: string, tagId: TaskTagId, day: string) => void; start: (id: string) => void; pause: (id: string) => void; complete: (id: string) => void; restart: (id: string) => void; pauseAll: () => void; setReminders: (settings: ReminderSettings) => void; setReminderDebugActivity: (at?: number) => void; restoreHints: () => void; startBreak: () => void; endBreak: () => void; dismissBreakReminder: () => void; dismissHint: (hint: HintId) => void; copyLatestTasks: () => void; updateTask: (id: string, title: string, tagId: TaskTagId) => void; updateAllocatedDuration: (id: string, allocatedDuration: number) => void; addCategory: (label: string, iconUri?: string, systemIconId?: string) => void; updateCategory: (id: string, label: string, iconUri?: string, systemIconId?: string) => void; deleteCategory: (id: string) => void; remove: (id: string) => void };
 const KEY = 'timeflow-v1'; const TimerContext = createContext<TimerApi | null>(null);
 const defaultReminders: ReminderSettings = { startEnabled: false, startFrequency: 'weekdays', startHour: 9, startMinute: 0, longEnabled: false };
 const initial: TimerState = { usageDays: [], tasks: [], categories: createStarterTaskTags(), lastTimestamp: Date.now(), reminders: defaultReminders, dismissedHints: [] };
@@ -156,6 +164,16 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   const mutate = (id: string, status: TaskStatus) => setState(old => { const at = Date.now(); if (old.breakState) return old; const next = settleTimerState(old, at); const today = todayKey(at); const target = next.tasks.find(task => task.id === id); if (!target || (status === 'running' && (target.day !== today || target.status === 'running'))) return next; const sortOrder = groupLastOrder(next.tasks, target.day, status, id) + 1; const tasks = next.tasks.map(t => t.id === id ? { ...t, status, sortOrder, completedAt: status === 'completed' ? at : t.completedAt } : t); const hasRunning = tasks.some(task => task.status === 'running'); return { ...next, usageDays: status === 'running' ? recordUsageDay(next.usageDays, today) : next.usageDays, tasks, lastTaskActivityAt: hasRunning ? at : undefined, workSessionStartedAt: hasRunning ? (next.workSessionStartedAt ?? at) : undefined, breakReminderShown: hasRunning ? next.breakReminderShown : false }; });
   const api = useMemo<TimerApi>(() => ({ ...state, ready, now,
     addTask: (title, tagId) => setState(old => { const at = Date.now(); const next = settleTimerState(old, at); const day = todayKey(at); const validTagId = next.categories.some(tag => tag.id === tagId) ? tagId : uncategorizedTagId; if (!title.trim() || hasDuplicateTask(next.tasks, day, title, validTagId)) return next; return { ...next, tasks: [{ id: `${at}-${Math.random()}`, title: title.trim(), createdAt: at, status: 'pending', elapsedDuration: 0, allocatedDuration: 0, day, tagId: validTagId, sortOrder: groupFirstOrder(next.tasks, day, 'pending') - 1 }, ...next.tasks] }; }),
+    addDebugTask: (title, tagId, day) => {
+      if (!__DEV__ || !ready || !isValidTaskDay(day)) return;
+      setState(old => {
+        const at = Date.now();
+        const next = settleTimerState(old, at);
+        const validTagId = next.categories.some(tag => tag.id === tagId) ? tagId : uncategorizedTagId;
+        if (!title.trim() || hasDuplicateTask(next.tasks, day, title, validTagId)) return next;
+        return { ...next, tasks: [{ id: `${at}-${Math.random()}`, title: title.trim(), createdAt: at, status: 'pending', elapsedDuration: 0, allocatedDuration: 0, day, tagId: validTagId, sortOrder: groupFirstOrder(next.tasks, day, 'pending') - 1 }, ...next.tasks] };
+      });
+    },
     start: id => mutate(id, 'running'), pause: id => mutate(id, 'paused'), complete: id => mutate(id, 'completed'),
     restart: id => setState(old => { const at = Date.now(); if (old.breakState) return old; const next = settleTimerState(old, at); const today = todayKey(at); const task = next.tasks.find(item => item.id === id); if (!task || task.day !== today || task.status === 'running') return next; const sortOrder = groupLastOrder(next.tasks, today, 'running', id) + 1; return { ...next, usageDays: recordUsageDay(next.usageDays, today), tasks: next.tasks.map(item => item.id === id ? { ...item, status: 'running', sortOrder, completedAt: undefined } : item), lastTaskActivityAt: at, workSessionStartedAt: next.workSessionStartedAt ?? at }; }),
     pauseAll: () => setState(old => { const at = Date.now(); const next = settleTimerState(old, at); if (!next.tasks.some(task => task.status === 'running')) return next; return { ...next, tasks: next.tasks.map(task => task.status === 'running' ? { ...task, status: 'paused' as TaskStatus } : task), lastTaskActivityAt: undefined, workSessionStartedAt: undefined, breakReminderShown: false }; }),

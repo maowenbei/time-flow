@@ -1,3 +1,6 @@
+import { useAdaptiveLayout } from '../../src/hooks/useAdaptiveLayout';
+import { AdaptivePageFrame } from '../../src/components/adaptive/AdaptivePageFrame';
+import { StatsLayout } from '../../src/components/adaptive/StatsLayout';
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useMemo, useState } from "react";
 import { useFocusEffect } from 'expo-router';
@@ -86,6 +89,7 @@ function heatColor(value: number, max: number) {
 }
 
 export default function Stats() {
+  const layout = useAdaptiveLayout();
   useFocusEffect(useCallback(() => { track('stats_viewed'); }, []));
   const timer = useTimer();
   const { locale, t } = useI18n();
@@ -179,81 +183,7 @@ export default function Stats() {
     track('stats_day_selected', { period, day_age_bucket: dayAgeBucket(day, timer.now), has_data: (totalsByDay.get(day) ?? 0) > 0 });
   };
 
-  return (
-    <ScrollView style={styles.page} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>{t("stats.title")}</Text>
-      <Text style={styles.subtitle}>{t("stats.subtitle")}</Text>
-      <View style={styles.periodControls}>
-        <View style={styles.segmented}>
-          <PeriodButton
-            label={t("stats.last7Days")}
-            active={period === "week"}
-            onPress={() => {
-              setSelectedDay(null);
-              if (period !== 'week') track('stats_period_changed', { period: 'week' });
-              else if (periodOffset !== 0) track('stats_period_navigated', { period, direction: 'reset', is_current_period: true });
-              setPeriod("week");
-              setPeriodOffset(0);
-            }}
-          />
-          <PeriodButton
-            label={copy.month}
-            active={period === "month"}
-            onPress={() => {
-              setSelectedDay(null);
-              if (period !== 'month') track('stats_period_changed', { period: 'month' });
-              else if (periodOffset !== 0) track('stats_period_navigated', { period, direction: 'reset', is_current_period: true });
-              setPeriod("month");
-              setPeriodOffset(0);
-            }}
-          />
-        </View>
-        <View style={styles.paging}>
-          <Pressable
-            onPress={() => {
-              setSelectedDay(null);
-              track('stats_period_navigated', { period, direction: 'previous', is_current_period: periodOffset - 1 === 0 });
-              setPeriodOffset((current) => current - 1);
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={copy.previous}
-            style={styles.pageButton}
-          >
-            <Ionicons name="chevron-back" size={18} color="#527069" />
-          </Pressable>
-          <Text numberOfLines={1} style={styles.periodTitle}>
-            {periodTitle(locale, period, days)}
-          </Text>
-          <Pressable
-            onPress={() => {
-              setSelectedDay(null);
-              if (isCurrentPeriod) return;
-              track('stats_period_navigated', { period, direction: 'next', is_current_period: periodOffset + 1 === 0 });
-              setPeriodOffset((current) => current + 1);
-            }}
-            disabled={isCurrentPeriod}
-            accessibilityRole="button"
-            accessibilityLabel={copy.next}
-            style={[
-              styles.pageButton,
-              isCurrentPeriod && styles.pageButtonDisabled,
-            ]}
-          >
-            <Ionicons name="chevron-forward" size={18} color="#527069" />
-          </Pressable>
-        </View>
-      </View>
-      <Pressable
-        onPress={() => { if (activeSelectedDay) track('stats_overview_selected', { period }); setSelectedDay(null); }}
-        accessibilityRole="button"
-        accessibilityLabel={copy.total}
-        style={[styles.totalCard, !activeSelectedDay && styles.totalCardActive]}
-      >
-        <Text style={styles.totalLabel}>{copy.total}</Text>
-        <Text style={styles.totalValue}>
-          {formatShortTime(periodTotal, locale)}
-        </Text>
-      </Pressable>
+  const chartContent = <>
       <View style={styles.chart}>
         {period === "week" ? (
           <WeekChart
@@ -276,6 +206,8 @@ export default function Stats() {
           />
         )}
       </View>
+  </>;
+  const detailContent = <>
       <View style={styles.tagStats}>
         <View style={styles.detailHeader}>
           <Text style={styles.chartTitle}>
@@ -358,6 +290,83 @@ export default function Stats() {
           </Text>
         )}
       </View>
+  </>;
+  return (
+    <AdaptivePageFrame layout={layout} style={styles.page} contentContainerStyle={styles.content}>
+      <Text style={styles.title}>{t("stats.title")}</Text>
+      <Text style={styles.subtitle}>{t("stats.subtitle")}</Text>
+      <View style={styles.periodControls}>
+        <View style={styles.segmented}>
+          <PeriodButton
+            label={t("stats.last7Days")}
+            active={period === "week"}
+            onPress={() => {
+              setSelectedDay(null);
+              if (period !== 'week') track('stats_period_changed', { period: 'week' });
+              else if (periodOffset !== 0) track('stats_period_navigated', { period, direction: 'reset', is_current_period: true });
+              setPeriod("week");
+              setPeriodOffset(0);
+            }}
+          />
+          <PeriodButton
+            label={copy.month}
+            active={period === "month"}
+            onPress={() => {
+              setSelectedDay(null);
+              if (period !== 'month') track('stats_period_changed', { period: 'month' });
+              else if (periodOffset !== 0) track('stats_period_navigated', { period, direction: 'reset', is_current_period: true });
+              setPeriod("month");
+              setPeriodOffset(0);
+            }}
+          />
+        </View>
+        <View style={styles.paging}>
+          <Pressable
+            onPress={() => {
+              setSelectedDay(null);
+              track('stats_period_navigated', { period, direction: 'previous', is_current_period: periodOffset - 1 === 0 });
+              setPeriodOffset((current) => current - 1);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={copy.previous}
+            style={styles.pageButton}
+          >
+            <Ionicons name="chevron-back" size={18} color="#527069" />
+          </Pressable>
+          <Text numberOfLines={1} style={styles.periodTitle}>
+            {periodTitle(locale, period, days)}
+          </Text>
+          <Pressable
+            onPress={() => {
+              setSelectedDay(null);
+              if (isCurrentPeriod) return;
+              track('stats_period_navigated', { period, direction: 'next', is_current_period: periodOffset + 1 === 0 });
+              setPeriodOffset((current) => current + 1);
+            }}
+            disabled={isCurrentPeriod}
+            accessibilityRole="button"
+            accessibilityLabel={copy.next}
+            style={[
+              styles.pageButton,
+              isCurrentPeriod && styles.pageButtonDisabled,
+            ]}
+          >
+            <Ionicons name="chevron-forward" size={18} color="#527069" />
+          </Pressable>
+        </View>
+      </View>
+      <Pressable
+        onPress={() => { if (activeSelectedDay) track('stats_overview_selected', { period }); setSelectedDay(null); }}
+        accessibilityRole="button"
+        accessibilityLabel={copy.total}
+        style={[styles.totalCard, !activeSelectedDay && styles.totalCardActive]}
+      >
+        <Text style={styles.totalLabel}>{copy.total}</Text>
+        <Text style={styles.totalValue}>
+          {formatShortTime(periodTotal, locale)}
+        </Text>
+      </Pressable>
+      {layout.enabled ? <StatsLayout wide={layout.wide} chart={chartContent} details={detailContent} /> : <>{chartContent}{detailContent}</>}
       {timer.ready && !timer.dismissedHints.includes("stats-allocation") ? (
         <DismissibleHint
           title={t("stats.noDoubleCountTitle")}
@@ -367,7 +376,7 @@ export default function Stats() {
           {t("stats.noDoubleCountText")}
         </DismissibleHint>
       ) : null}
-    </ScrollView>
+    </AdaptivePageFrame>
   );
 }
 

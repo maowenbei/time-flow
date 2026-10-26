@@ -1,5 +1,10 @@
+import { IPadTimeEditor } from '../../src/components/adaptive/IPadTimeEditor';
+import { useAdaptiveLayout } from '../../src/hooks/useAdaptiveLayout';
+import { AdaptivePageFrame } from '../../src/components/adaptive/AdaptivePageFrame';
+import { AdaptiveModalFrame } from '../../src/components/adaptive/AdaptiveModalFrame';
+import { HistoryLayout } from '../../src/components/adaptive/HistoryLayout';
 import { Ionicons } from "@expo/vector-icons";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useFocusEffect } from 'expo-router';
 import { dayAgeBucket, timerDurationBucket, track } from '../../src/services/analytics';
 import {
@@ -31,6 +36,7 @@ const statusOrder: Record<Task["status"], number> = {
 const compactDayHeader = { paddingVertical: 11 };
 
 export default function History() {
+  const layout = useAdaptiveLayout();
   useFocusEffect(useCallback(() => { track('history_viewed'); }, []));
   const timer = useTimer();
   const { locale, t } = useI18n();
@@ -42,6 +48,7 @@ export default function History() {
   const [detailsError, setDetailsError] = useState(false);
   const [editingTitle, setEditingTitle] = useState("");
   const [editingTagId, setEditingTagId] = useState<TaskTagId>("uncategorized");
+  const timeTaskTitle = useRef('');
   const groups = Object.entries(
     timer.tasks.reduce<Record<string, Task[]>>((all, task) => {
       (all[task.day] ??= []).push(task);
@@ -59,6 +66,8 @@ export default function History() {
     )
     .sort(([a], [b]) => b.localeCompare(a));
   const openEditor = (task: Task) => {
+    if (layout.isPad) Keyboard.dismiss();
+    timeTaskTitle.current = task.title;
     setEditingTask(task);
     track('time_editor_opened', { day_age_bucket: dayAgeBucket(task.day) });
     setAllocatedMinutes(String(Math.round(task.allocatedDuration / 60000)));
@@ -66,11 +75,11 @@ export default function History() {
   };
   const closeEditor = () => {
     setEditingTask(null);
-    setTimeError("");
+    if (!layout.isPad) setTimeError('');
   };
   const saveTimes = () => {
     const allocated = Number(allocatedMinutes);
-    if (!editingTask || !Number.isInteger(allocated) || allocated < 0) {
+    if (!editingTask || (layout.isPad && !allocatedMinutes.length) || !Number.isInteger(allocated) || allocated < 0) {
       setTimeError(t("history.invalidMinutes"));
       return;
     }
@@ -106,91 +115,150 @@ export default function History() {
   };
   const dayTitle = (day: string) =>
     day === todayKey() ? t("stats.today") : formatHistoryDay(locale, day);
+  const activeDay = groups.some(([day]) => day === expandedDay) ? expandedDay : groups[0]?.[0] ?? null;
+  useEffect(() => {
+    // Persist the default selection through a transition back to a narrow window.
+    if (layout.wide && activeDay !== expandedDay) setExpandedDay(activeDay);
+  }, [layout.wide, activeDay, expandedDay]);
+  const renderDay = (day: string, tasks: Task[], variant: 'accordion' | 'date' | 'detail' = 'accordion') => {
+
+    const expanded = variant === 'accordion' ? day === expandedDay : day === activeDay;
+    const liveTasks = tasks.map((task) =>
+      liveTask(task, timer, timer.now),
+    );
+    const work = liveTasks.reduce(
+      (sum, task) => sum + task.allocatedDuration,
+      0,
+    );
+    const completed = tasks.filter(
+      (task) => task.status === "completed",
+    );
+    return (
+      <View key={day} style={[styles.day, variant === 'detail' && { borderWidth: 0, borderRadius: 0, backgroundColor: 'transparent' }, variant === 'date' && { borderWidth: 0, borderRadius: 12, backgroundColor: expanded ? '#E3F3ED' : 'transparent' }]}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={dayTitle(day)}
+          accessibilityState={{ expanded }}
+          onPress={() => {
+            if (variant !== 'detail' && !expanded) track('history_day_expanded', { day_age_bucket: dayAgeBucket(day), task_count: tasks.length });
+            if (variant === 'detail') return;
+            setExpandedDay(variant === 'date' ? day : expanded ? null : day);
+          }}
+          disabled={variant === 'detail'}
+          style={[styles.dayHeader, compactDayHeader, variant === 'date' && expanded && { backgroundColor: '#E3F3ED' }, variant === 'detail' && { paddingHorizontal: 0, paddingTop: 0, paddingBottom: 16 }]}
+        >
+          <View style={variant !== 'accordion' && { flex: 1, minWidth: 0 }}>
+            {variant !== 'detail' ? <Text style={styles.dayTitle}>{dayTitle(day)}</Text> : null}
+            <Text style={[styles.dayMeta, variant === 'detail' && { marginTop: 0 }]}>
+              {t("history.invested")} {formatShortTime(work, locale)} ·{" "}
+              {locale === "fr"
+                ? t("history.completed", { count: completed.length })
+                : `${t("history.completed")} ${completed.length}`}
+            </Text>
+          </View>
+          {variant !== 'detail' ? <Ionicons
+            name={expanded ? "chevron-down" : "chevron-forward"}
+            size={18}
+            color="#9DB0AA"
+          /> : null}
+        </Pressable>
+        {expanded && variant !== 'date' ? (
+          <View style={[styles.rows, variant === 'detail' && { borderTopWidth: 0, borderRadius: 12, overflow: 'hidden' }]}>
+            {liveTasks.map((task) => (
+              <SwipeDelete
+                key={task.id}
+                actionVariant="compact"
+                cornerRadius={0}
+                label={t("task.delete")}
+                onDelete={() => { if (!timer.ready || !timer.tasks.some(item => item.id === task.id)) return; timer.remove(task.id); track('task_deleted', { entry_source: 'history', task_status: task.status }); }}
+              >
+                <View style={styles.row}>
+                  <Pressable
+                    onPress={() => openDetails(task)}
+                    onLongPress={() => openEditor(task)}
+                    delayLongPress={450}
+                    style={styles.rowPress}
+                    accessibilityLabel={t("task.edit", {
+                      title: task.title,
+                    })}
+                    accessibilityHint={t("history.editHint")}
+                  >
+                    <TaskTagIcon tagId={task.tagId} size={30} />
+                    <Text numberOfLines={1} style={styles.rowTitle}>
+                      {task.title}
+                    </Text>
+                    <Text numberOfLines={1} style={styles.status}>
+                      {t(`history.statuses.${task.status}`)}
+                    </Text>
+                    <Text numberOfLines={1} style={styles.rowTime}>
+                      {formatShortTime(task.allocatedDuration, locale)}
+                    </Text>
+                  </Pressable>
+                </View>
+              </SwipeDelete>
+            ))}
+          </View>
+        ) : null}
+      </View>
+    );
+  };
+
+  const timeEditor = (
+    <View style={styles.modalCard}>
+        <Text style={styles.modalTitle}>{t("history.editTime")}</Text>
+        <Text style={styles.modalTask} numberOfLines={1}>
+          {editingTask?.title ?? timeTaskTitle.current}
+        </Text>
+        <Text style={styles.inputLabel}>{t("history.actualMinutes")}</Text>
+        <TextInput
+          value={allocatedMinutes}
+          onChangeText={setAllocatedMinutes}
+          keyboardType="number-pad"
+          selectTextOnFocus
+          style={styles.timeInput}
+        />
+        {timeError ? <Text style={styles.error}>{timeError}</Text> : null}
+        <View style={styles.modalActions}>
+          <Pressable onPress={closeEditor} style={styles.cancel}>
+            <Text style={styles.cancelText}>{t("common.cancel")}</Text>
+          </Pressable>
+          <Pressable onPress={saveTimes} style={styles.save}>
+            <Text style={styles.saveText}>{t("common.save")}</Text>
+          </Pressable>
+        </View>
+    </View>
+  );
+
   return (
     <>
-      <ScrollView style={styles.page} contentContainerStyle={styles.content}>
+      {layout.wide && groups.length > 0 ? <HistoryLayout layout={layout}
+        datesTitle={t('adaptive.recordDates')} recordsTitle={activeDay ? dayTitle(activeDay) : ''}
+        header={
+          <>
+            <Text style={styles.title}>{t("history.title")}</Text>
+            <Text style={styles.subtitle}>{t("history.subtitle")}</Text>
+          </>
+        }
+        dates={groups.map(([day, tasks]) => renderDay(day, tasks, 'date'))}
+        details={groups.filter(([day]) => day === activeDay).map(([day, tasks]) => renderDay(day, tasks, 'detail'))}
+        footer={
+          <>
+            {groups.length && !timer.dismissedHints.includes("history-actions") ? (
+              <DismissibleHint
+                dismissLabel={t("hints.dismiss")}
+                onDismiss={() => timer.dismissHint("history-actions")}
+              >
+                {t("hints.historyActions")}
+              </DismissibleHint>
+            ) : null}
+          </>
+        }
+      /> : (
+      <AdaptivePageFrame layout={layout} style={styles.page} contentContainerStyle={styles.content}>
         <Text style={styles.title}>{t("history.title")}</Text>
         <Text style={styles.subtitle}>{t("history.subtitle")}</Text>
         {groups.length ? (
-          groups.map(([day, tasks]) => {
-            const expanded = day === expandedDay;
-            const liveTasks = tasks.map((task) =>
-              liveTask(task, timer, timer.now),
-            );
-            const work = liveTasks.reduce(
-              (sum, task) => sum + task.allocatedDuration,
-              0,
-            );
-            const completed = tasks.filter(
-              (task) => task.status === "completed",
-            );
-            return (
-              <View key={day} style={styles.day}>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={dayTitle(day)}
-                  accessibilityState={{ expanded }}
-                  onPress={() => {
-                    if (!expanded) track('history_day_expanded', { day_age_bucket: dayAgeBucket(day), task_count: tasks.length });
-                    setExpandedDay(expanded ? null : day);
-                  }}
-                  style={[styles.dayHeader, compactDayHeader]}
-                >
-                  <View>
-                    <Text style={styles.dayTitle}>{dayTitle(day)}</Text>
-                    <Text style={styles.dayMeta}>
-                      {t("history.invested")} {formatShortTime(work, locale)} ·{" "}
-                      {locale === "fr"
-                        ? t("history.completed", { count: completed.length })
-                        : `${t("history.completed")} ${completed.length}`}
-                    </Text>
-                  </View>
-                  <Ionicons
-                    name={expanded ? "chevron-down" : "chevron-forward"}
-                    size={18}
-                    color="#9DB0AA"
-                  />
-                </Pressable>
-                {expanded ? (
-                  <View style={styles.rows}>
-                    {liveTasks.map((task) => (
-                      <SwipeDelete
-                        key={task.id}
-                        actionVariant="compact"
-                        cornerRadius={0}
-                        label={t("task.delete")}
-                        onDelete={() => { if (!timer.ready || !timer.tasks.some(item => item.id === task.id)) return; timer.remove(task.id); track('task_deleted', { entry_source: 'history', task_status: task.status }); }}
-                      >
-                        <View style={styles.row}>
-                          <Pressable
-                            onPress={() => openDetails(task)}
-                            onLongPress={() => openEditor(task)}
-                            delayLongPress={450}
-                            style={styles.rowPress}
-                            accessibilityLabel={t("task.edit", {
-                              title: task.title,
-                            })}
-                            accessibilityHint={t("history.editHint")}
-                          >
-                            <TaskTagIcon tagId={task.tagId} size={30} />
-                            <Text numberOfLines={1} style={styles.rowTitle}>
-                              {task.title}
-                            </Text>
-                            <Text numberOfLines={1} style={styles.status}>
-                              {t(`history.statuses.${task.status}`)}
-                            </Text>
-                            <Text numberOfLines={1} style={styles.rowTime}>
-                              {formatShortTime(task.allocatedDuration, locale)}
-                            </Text>
-                          </Pressable>
-                        </View>
-                      </SwipeDelete>
-                    ))}
-                  </View>
-                ) : null}
-              </View>
-            );
-          })
+          groups.map(([day, tasks]) => renderDay(day, tasks))
         ) : (
           <View style={styles.empty}>
             <Ionicons name="albums-outline" size={33} color="#A9C7C0" />
@@ -206,38 +274,30 @@ export default function History() {
             {t("hints.historyActions")}
           </DismissibleHint>
         ) : null}
-      </ScrollView>
+      </AdaptivePageFrame>)}
       <Modal
         visible={editingTask !== null}
         transparent
+        presentationStyle="overFullScreen"
+        supportedOrientations={layout.isPad ? ['portrait', 'portrait-upside-down', 'landscape-left', 'landscape-right'] : undefined}
         animationType="fade"
         onRequestClose={closeEditor}
       >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>{t("history.editTime")}</Text>
-            <Text style={styles.modalTask} numberOfLines={1}>
-              {editingTask?.title}
-            </Text>
-            <Text style={styles.inputLabel}>{t("history.actualMinutes")}</Text>
-            <TextInput
-              value={allocatedMinutes}
-              onChangeText={setAllocatedMinutes}
-              keyboardType="number-pad"
-              selectTextOnFocus
-              style={styles.timeInput}
-            />
-            {timeError ? <Text style={styles.error}>{timeError}</Text> : null}
-            <View style={styles.modalActions}>
-              <Pressable onPress={closeEditor} style={styles.cancel}>
-                <Text style={styles.cancelText}>{t("common.cancel")}</Text>
-              </Pressable>
-              <Pressable onPress={saveTimes} style={styles.save}>
-                <Text style={styles.saveText}>{t("common.save")}</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
+        {layout.isPad ? (editingTask !== null ? <IPadTimeEditor
+          layout={layout}
+          title={t('history.editTime')}
+          taskTitle={editingTask.title}
+          minutesLabel={t('history.actualMinutes')}
+          value={allocatedMinutes}
+          error={timeError}
+          clearLabel={t('adaptive.keypadClear')}
+          backspaceLabel={t('adaptive.keypadBackspace')}
+          cancelLabel={t('common.cancel')}
+          saveLabel={t('common.save')}
+          onChange={value => { setAllocatedMinutes(value); setTimeError(''); }}
+          onCancel={closeEditor}
+          onSave={saveTimes}
+        /> : null) : <View style={styles.modalBackdrop}>{timeEditor}</View>}
       </Modal>
       <Modal
         visible={editingDetails !== null}
@@ -245,7 +305,7 @@ export default function History() {
         animationType="slide"
         onRequestClose={closeDetails}
       >
-        <Pressable style={styles.detailsBackdrop} onPress={closeDetails}>
+        <AdaptiveModalFrame layout={layout} legacyBackdrop={<Pressable style={styles.detailsBackdrop} onPress={closeDetails}></Pressable>} onDismiss={closeDetails}>
           <Pressable
             style={styles.detailsSheet}
             onPress={(event) => event.stopPropagation()}
@@ -302,7 +362,7 @@ export default function History() {
               </Pressable>
             </View>
           </Pressable>
-        </Pressable>
+        </AdaptiveModalFrame>
       </Modal>
     </>
   );

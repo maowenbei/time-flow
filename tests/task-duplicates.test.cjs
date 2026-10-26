@@ -93,10 +93,13 @@ test('Today copy count and analytics match the actual batch after category norma
   const jsx = (type, props) => ({ type, props });
   const imports = {
     'react/jsx-runtime': { jsx, jsxs: jsx },
-    react: { useState: value => [value, () => {}] },
+    react: { useState: value => [value, () => {}], useRef: value => ({ current: value }), useCallback: fn => fn },
     '@expo/vector-icons': { Ionicons: 'Icon' },
-    'expo-router': { useRouter: () => ({}) },
+    'expo-router': { useRouter: () => ({}), useFocusEffect() {} },
     'react-native': { Pressable: 'Pressable', StyleSheet: { create: value => value }, Keyboard: {} },
+    '../../src/components/adaptive/AdaptiveTaskGroup': {},
+    '../../src/hooks/useAdaptiveLayout': { useAdaptiveLayout: () => ({ enabled: false, isPad: false, wide: false }) },
+    '../../src/components/adaptive/AdaptivePageFrame': {}, '../../src/components/adaptive/AdaptiveModalFrame': {}, '../../src/components/adaptive/TodayLayout': {},
     '../../src/components/TaskCard': {}, '../../src/components/DismissibleHint': {}, '../../src/components/TaskTagIcon': {},
     '../../src/constants/taskTags': { getTaskTagLabel: () => '' },
     '../../src/i18n': { useI18n: () => ({ locale: 'en', t: (key, params) => key === 'today.copyLatestTasks' ? `Copy ${params.count}` : key }), formatDayLabel: () => '' },

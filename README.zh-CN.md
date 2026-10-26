@@ -6,6 +6,8 @@
 
 > 当前发布版本为 **iOS App**，支持 iPhone；Android 与 Web 命令仅用于项目开发与预览。
 
+iPad 自适应布局已在源码中实现，真机和 TestFlight 验收待完成；安装与验收步骤见 [iPad 兼容说明](docs/ipad-compatibility.md)。
+
 ## 下载
 
 | 来源 | 中国区 App Store | 美国区 App Store |
