@@ -18,7 +18,7 @@ export function ReviewDebugPanel() {
   const simulate = () => {
     setReviewDebugEnabled(true);
     setArmed(true);
-    setMessage(`已模拟满足 ${REQUIRED_DAYS} 天条件。返回今日，启动并完成最后一个运行任务，停留 2 秒。`);
+    setMessage(`已模拟满足 ${REQUIRED_DAYS} 天条件。返回今日，完成任意一个正在计时或已暂停的任务，停留约 600 毫秒。`);
   };
   const direct = async () => {
     const result = await requestReviewForDebug(() => mounted.current && AppState.currentState === 'active');

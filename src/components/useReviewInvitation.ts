@@ -14,7 +14,7 @@ export function useReviewInvitation(modalVisible: boolean) {
   if (!opportunity.current) opportunity.current = createReviewOpportunity(() => {
     const { timer: current, modalVisible: modal } = latest.current;
     return current.ready && focused.current && !modal && AppState.currentState === 'active' && !Keyboard.isVisible()
-      && !current.breakState && !current.tasks.some(task => task.status === 'running')
+      && !current.breakState
       && (isReviewDebugEnabled() || isReviewEligible(current.usageDays));
   });
   const previous = useRef<typeof timer.tasks | null>(null);
@@ -32,13 +32,13 @@ export function useReviewInvitation(modalVisible: boolean) {
   useEffect(() => {
     const before = previous.current;
     previous.current = timer.ready ? timer.tasks : null;
-    if (!timer.ready || !focused.current || modalVisible || timer.breakState || timer.tasks.some(task => task.status === 'running')) {
+    if (!timer.ready || !focused.current || modalVisible || timer.breakState) {
       opportunity.current?.cancel();
       return;
     }
     // Hydration, history edits, and returning to a screen never create opportunities.
-    const previouslyRunning = new Set(before?.filter(task => task.status === 'running').map(task => task.id));
-    if (timer.tasks.some(task => task.status === 'completed' && previouslyRunning.has(task.id))) {
+    const previouslyActive = new Set(before?.filter(task => task.status === 'running' || task.status === 'paused').map(task => task.id));
+    if (timer.tasks.some(task => task.status === 'completed' && previouslyActive.has(task.id))) {
       opportunity.current?.arm();
     }
   }, [timer.ready, timer.tasks, timer.breakState, modalVisible]);

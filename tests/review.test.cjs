@@ -118,14 +118,14 @@ function fakeClock() {
   let nextId = 0;
   const pending = new Map();
   return {
-    setTimeout(fn, delay) { assert.equal(delay, 2000); pending.set(++nextId, fn); return nextId; },
+    setTimeout(fn, delay) { assert.equal(delay, 600); pending.set(++nextId, fn); return nextId; },
     clearTimeout(id) { pending.delete(id); },
     fire() { const jobs = [...pending.values()]; pending.clear(); jobs.forEach(fn => fn()); },
     get size() { return pending.size; },
   };
 }
 
-test('two-second opportunity cancels permanently, checks safety and permits a later completion', () => {
+test('600ms opportunity cancels permanently, checks safety and permits a later completion', () => {
   const clock = fakeClock();
   const api = load('src/services/storeReview.ts', {
     '@react-native-async-storage/async-storage': {}, 'react-native': {}, 'expo-store-review': {}, './analytics': {},
@@ -206,11 +206,10 @@ test('hydration does not invite; only a fresh completion after three usage days 
   assert.equal(h.requests, 1);
 });
 
-test('page blur, background, keyboard, modal, break and restarted timer cancel without delayed replay', () => {
+test('page blur, background, keyboard, modal and break cancel without delayed replay', () => {
   for (const interrupt of [h => h.blur(), h => h.background(), h => h.keyboard(),
     h => { h.render({}, true); h.render({}, false); },
-    h => { h.render({ breakState: {} }); h.render({ breakState: undefined }); },
-    h => { h.start(); h.render({ tasks: [{ id: 'one', status: 'paused' }] }); }]) {
+    h => { h.render({ breakState: {} }); h.render({ breakState: undefined }); }]) {
     const h = invitationHarness();
     h.start(); h.complete();
     interrupt(h);
@@ -219,17 +218,42 @@ test('page blur, background, keyboard, modal, break and restarted timer cancel w
   }
 });
 
-test('two days and another active timer block the invitation', () => {
+test('two usage days still block the invitation', () => {
   const h = invitationHarness();
   h.render({ usageDays: days.slice(0, 2) }); h.start(); h.complete(); h.clock.fire();
   assert.equal(h.requests, 0);
-  h.render({ usageDays: days }); h.start();
-  h.render({ tasks: [{ id: 'one', status: 'completed' }, { id: 'two', status: 'running' }] });
-  h.clock.fire();
-  assert.equal(h.requests, 0);
 });
 
-test('debug simulation bypasses only usage days, still requires a fresh last completion and cancels on background', () => {
+test('completion invites while another timer keeps running', () => {
+  const h = invitationHarness();
+  h.start();
+  h.render({ tasks: [{ id: 'one', status: 'completed' }, { id: 'two', status: 'running' }] });
+  h.clock.fire();
+  assert.equal(h.requests, 1);
+});
+
+test('paused task completion invites while pending tasks and history edits do not', () => {
+  const h = invitationHarness();
+  h.render({ ready: true, tasks: [{ id: 'one', status: 'paused' }] });
+  h.complete(); h.clock.fire();
+  assert.equal(h.requests, 1);
+  h.render({ tasks: [{ id: 'one', status: 'completed', title: 'edited' }] });
+  h.clock.fire();
+  assert.equal(h.requests, 1);
+  h.render({ tasks: [{ id: 'one', status: 'pending' }] });
+  h.complete(); h.clock.fire();
+  assert.equal(h.requests, 1);
+});
+
+test('starting another timer during the delay does not cancel the invitation', () => {
+  const h = invitationHarness();
+  h.start(); h.complete();
+  h.render({ tasks: [{ id: 'one', status: 'completed' }, { id: 'two', status: 'running' }] });
+  h.clock.fire();
+  assert.equal(h.requests, 1);
+});
+
+test('debug simulation bypasses only usage days, still requires a fresh completion and cancels on background', () => {
   const h = invitationHarness(true);
   h.render({ ready: true, usageDays: [], tasks: [{ id: 'one', status: 'completed' }] });
   h.clock.fire();
@@ -241,7 +265,7 @@ test('debug simulation bypasses only usage days, still requires a fresh last com
   h.start();
   h.render({ tasks: [{ id: 'one', status: 'completed' }, { id: 'two', status: 'running' }] });
   h.clock.fire();
-  assert.equal(h.requests, 1);
+  assert.equal(h.requests, 2);
 });
 
 test('debug requests are repeatable and isolated from real invitation storage and analytics', async () => {

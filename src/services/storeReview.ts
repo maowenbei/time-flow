@@ -84,7 +84,7 @@ export function createReviewOpportunity(isSafe: () => boolean, request = request
         timeout = undefined;
         const valid = () => generation === token && isSafe();
         if (valid()) void request(valid);
-      }, 2000);
+      }, 600);
     },
   };
 }
