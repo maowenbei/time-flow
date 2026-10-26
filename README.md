@@ -34,7 +34,7 @@ ThreadFlow is a lightweight work timer for the way real work happens. Run multip
 - Today’s tasks, history, and time statistics
 - Organize tasks with built-in icons or custom icons from your photo library
 - Copy yesterday’s tasks to avoid repetitive entry
-- All data stays on your device—no account or uploads required
+- Task content stays on your device; anonymous usage analytics require no account
 
 ## Feedback
 
@@ -43,6 +43,8 @@ Submit bugs, feature requests, or other feedback through [GitHub Issues](https:/
 ## Tech stack
 
 React Native, Expo, Expo Router, and TypeScript.
+
+Firebase Analytics setup, events, and Development Build verification: [Analytics guide](docs/analytics.md).
 
 ## Getting started
 
@@ -77,6 +79,8 @@ For example: A starts at 10:00, B starts at 10:20, B completes at 10:50, and A c
 ## Privacy
 
 Tasks, categories, and timing data are stored locally with AsyncStorage. If you choose a photo-library image for a category, it is compressed and saved on the device. The app does not upload this data.
+
+Firebase-enabled iOS builds collect anonymous usage events, task counts, and timer duration buckets. Task text, category names, and images are never uploaded. No account ID or advertising ID is collected; Firebase's default anonymous app instance ID supports usage and retention measurement. Builds without Firebase configuration do not send events.
 
 ## License
 

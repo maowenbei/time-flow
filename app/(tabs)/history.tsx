@@ -1,5 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from 'expo-router';
+import { dayAgeBucket, timerDurationBucket, track } from '../../src/services/analytics';
 import {
   Keyboard,
   Modal,
@@ -15,7 +17,7 @@ import { DismissibleHint } from "../../src/components/DismissibleHint";
 import { TaskTagIcon } from "../../src/components/TaskTagIcon";
 import { getTaskTagLabel, TaskTagId } from "../../src/constants/taskTags";
 import { formatHistoryDay, formatShortTime, useI18n } from "../../src/i18n";
-import { liveTask, Task, useTimer } from "../../src/state/TimerContext";
+import { hasDuplicateTask, liveTask, Task, useTimer } from "../../src/state/TimerContext";
 import { todayKey } from "../../src/utils/time";
 
 import { colors } from "../../src/constants/colors";
@@ -29,6 +31,7 @@ const statusOrder: Record<Task["status"], number> = {
 const compactDayHeader = { paddingVertical: 11 };
 
 export default function History() {
+  useFocusEffect(useCallback(() => { track('history_viewed'); }, []));
   const timer = useTimer();
   const { locale, t } = useI18n();
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
@@ -36,6 +39,7 @@ export default function History() {
   const [allocatedMinutes, setAllocatedMinutes] = useState("");
   const [timeError, setTimeError] = useState("");
   const [editingDetails, setEditingDetails] = useState<Task | null>(null);
+  const [detailsError, setDetailsError] = useState(false);
   const [editingTitle, setEditingTitle] = useState("");
   const [editingTagId, setEditingTagId] = useState<TaskTagId>("uncategorized");
   const groups = Object.entries(
@@ -56,6 +60,7 @@ export default function History() {
     .sort(([a], [b]) => b.localeCompare(a));
   const openEditor = (task: Task) => {
     setEditingTask(task);
+    track('time_editor_opened', { day_age_bucket: dayAgeBucket(task.day) });
     setAllocatedMinutes(String(Math.round(task.allocatedDuration / 60000)));
     setTimeError("");
   };
@@ -69,10 +74,16 @@ export default function History() {
       setTimeError(t("history.invalidMinutes"));
       return;
     }
-    timer.updateAllocatedDuration(editingTask.id, allocated * 60000);
+    const current = timer.tasks.find(task => task.id === editingTask.id);
+    if (!timer.ready || !current) return;
+    const before = liveTask(current, timer, Date.now()).allocatedDuration;
+    const after = allocated * 60000;
+    timer.updateAllocatedDuration(editingTask.id, after);
+    if (before !== after) track('task_time_updated', { change_direction: after > before ? 'increase' : 'decrease', change_bucket: timerDurationBucket(Math.abs(after - before)), day_age_bucket: dayAgeBucket(current.day) });
     closeEditor();
   };
   const openDetails = (task: Task) => {
+    setDetailsError(false);
     setEditingDetails(task);
     setEditingTitle(task.title);
     setEditingTagId(task.tagId);
@@ -82,7 +93,15 @@ export default function History() {
   };
   const saveDetails = () => {
     if (!editingDetails || !editingTitle.trim()) return;
+    if (hasDuplicateTask(timer.tasks, editingDetails.day, editingTitle, editingTagId, editingDetails.id)) {
+      setDetailsError(true);
+      track('task_duplicate_blocked', { entry_source: 'history_edit' });
+      return;
+    }
+    const current = timer.tasks.find(task => task.id === editingDetails.id);
+    if (!timer.ready || !current) return;
     timer.updateTask(editingDetails.id, editingTitle, editingTagId);
+    if (current.title !== editingTitle.trim() || current.tagId !== editingTagId) track('task_updated', { entry_source: 'history', name_changed: current.title !== editingTitle.trim(), category_changed: current.tagId !== editingTagId });
     closeDetails();
   };
   const dayTitle = (day: string) =>
@@ -111,9 +130,10 @@ export default function History() {
                   accessibilityRole="button"
                   accessibilityLabel={dayTitle(day)}
                   accessibilityState={{ expanded }}
-                  onPress={() =>
-                    setExpandedDay((current) => (current === day ? null : day))
-                  }
+                  onPress={() => {
+                    if (!expanded) track('history_day_expanded', { day_age_bucket: dayAgeBucket(day), task_count: tasks.length });
+                    setExpandedDay(expanded ? null : day);
+                  }}
                   style={[styles.dayHeader, compactDayHeader]}
                 >
                   <View>
@@ -139,7 +159,7 @@ export default function History() {
                         actionVariant="compact"
                         cornerRadius={0}
                         label={t("task.delete")}
-                        onDelete={() => timer.remove(task.id)}
+                        onDelete={() => { if (!timer.ready || !timer.tasks.some(item => item.id === task.id)) return; timer.remove(task.id); track('task_deleted', { entry_source: 'history', task_status: task.status }); }}
                       >
                         <View style={styles.row}>
                           <Pressable
@@ -234,7 +254,7 @@ export default function History() {
             <Text style={styles.detailsLabel}>{t("today.taskName")}</Text>
             <TextInput
               value={editingTitle}
-              onChangeText={setEditingTitle}
+              onChangeText={value => { setEditingTitle(value); setDetailsError(false); }}
               onSubmitEditing={Keyboard.dismiss}
               returnKeyType="done"
               blurOnSubmit
@@ -249,7 +269,7 @@ export default function History() {
                 return (
                   <Pressable
                     key={tag.id}
-                    onPress={() => setEditingTagId(tag.id)}
+                    onPress={() => { setEditingTagId(tag.id); setDetailsError(false); }}
                     style={[
                       styles.tagOption,
                       editingTagId === tag.id && styles.tagOptionSelected,
@@ -266,6 +286,7 @@ export default function History() {
                 );
               })}
             </View>
+            {detailsError ? <Text accessibilityRole="alert" style={styles.error}>{t("today.duplicateTask")}</Text> : null}
             <View style={styles.modalActions}>
               <Pressable onPress={closeDetails} style={styles.cancel}>
                 <Text style={styles.cancelText}>{t("common.cancel")}</Text>

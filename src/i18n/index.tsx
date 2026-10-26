@@ -220,11 +220,27 @@ function mergeLocale(base: Translation, additions: LocaleAdditions, locale: AppL
   return Object.fromEntries([...keys].map(key => [key, { ...((localizedBase[key] as Record<string, unknown>) ?? {}), ...(mergedAdditions[key as keyof LocaleAdditions] ?? {}) }]));
 }
 
+const duplicateTaskCopy: Record<AppLocale, string> = {
+  'zh-CN': '当天已存在同名、同类别的任务，请修改名称或选择其他类别。',
+  'zh-Hant': '當天已存在同名、同類別的任務，請修改名稱或選擇其他類別。',
+  en: 'A task with this name and category already exists on this day. Change the name or category.',
+  fr: 'Une tâche de ce nom et de cette catégorie existe déjà ce jour-là. Modifiez le nom ou la catégorie.',
+  es: 'Ya existe una tarea con este nombre y categoría ese día. Cambia el nombre o la categoría.',
+  'pt-BR': 'Já existe uma tarefa com este nome e categoria neste dia. Altere o nome ou a categoria.',
+  it: 'Esiste già un’attività con questo nome e categoria in questo giorno. Cambia il nome o la categoria.',
+  ru: 'В этот день уже есть задача с таким названием и категорией. Измените название или категорию.',
+  tr: 'Bu gün aynı ad ve kategoride bir görev zaten var. Adı veya kategoriyi değiştirin.',
+  id: 'Tugas dengan nama dan kategori ini sudah ada pada hari ini. Ubah nama atau kategorinya.',
+  ja: 'この日には同じ名前・カテゴリのタスクがすでにあります。名前またはカテゴリを変更してください。',
+  ko: '해당 날짜에 같은 이름과 카테고리의 작업이 이미 있습니다. 이름이나 카테고리를 변경하세요.',
+  de: 'An diesem Tag gibt es bereits eine Aufgabe mit diesem Namen und dieser Kategorie. Ändere den Namen oder die Kategorie.',
+};
+
 export const translations = Object.fromEntries(Object.entries(baseTranslations).map(([locale, base]) => {
   const merged = mergeLocale(base, localeAdditions[locale as AppLocale], locale as AppLocale);
   const history = merged.history as Translation;
   const reminders = merged.reminders as Translation;
-  return [locale, { ...merged, reminders: { ...reminders, title: reminderTitles[locale as AppLocale], longHint: longReminderHints[locale as AppLocale] }, history: { ...history, statuses: { ...(history.statuses as Translation), paused: pausedHistoryLabels[locale as AppLocale] } } }];
+  return [locale, { ...merged, today: { ...(merged.today as Translation), duplicateTask: duplicateTaskCopy[locale as AppLocale] }, reminders: { ...reminders, title: reminderTitles[locale as AppLocale], longHint: longReminderHints[locale as AppLocale] }, history: { ...history, statuses: { ...(history.statuses as Translation), paused: pausedHistoryLabels[locale as AppLocale] } } }];
 })) as unknown as Record<AppLocale, Translation>;
 
 function flattenedKeys(value: Translation, prefix = ''): string[] {

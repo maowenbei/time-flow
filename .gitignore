@@ -18,6 +18,7 @@ ios/
 .env
 .env.*
 !.env.example
+GoogleService-Info.plist
 
 # Local product planning notes
 产品文档.txt

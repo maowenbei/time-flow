@@ -1,5 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useFocusEffect } from 'expo-router';
+import { dayAgeBucket, track } from '../../src/services/analytics';
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { TaskTagIcon } from "../../src/components/TaskTagIcon";
 import { DismissibleHint } from "../../src/components/DismissibleHint";
@@ -84,6 +86,7 @@ function heatColor(value: number, max: number) {
 }
 
 export default function Stats() {
+  useFocusEffect(useCallback(() => { track('stats_viewed'); }, []));
   const timer = useTimer();
   const { locale, t } = useI18n();
   const [period, setPeriod] = useState<Period>("week");
@@ -170,6 +173,12 @@ export default function Stats() {
     : periodTitle(locale, period, days);
   const monthLeadingBlanks = period === "month" ? dayDate(days[0]).getDay() : 0;
 
+  const selectDay = (day: string) => {
+    if (day === activeSelectedDay) return;
+    setSelectedDay(day);
+    track('stats_day_selected', { period, day_age_bucket: dayAgeBucket(day, timer.now), has_data: (totalsByDay.get(day) ?? 0) > 0 });
+  };
+
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.content}>
       <Text style={styles.title}>{t("stats.title")}</Text>
@@ -181,6 +190,8 @@ export default function Stats() {
             active={period === "week"}
             onPress={() => {
               setSelectedDay(null);
+              if (period !== 'week') track('stats_period_changed', { period: 'week' });
+              else if (periodOffset !== 0) track('stats_period_navigated', { period, direction: 'reset', is_current_period: true });
               setPeriod("week");
               setPeriodOffset(0);
             }}
@@ -190,6 +201,8 @@ export default function Stats() {
             active={period === "month"}
             onPress={() => {
               setSelectedDay(null);
+              if (period !== 'month') track('stats_period_changed', { period: 'month' });
+              else if (periodOffset !== 0) track('stats_period_navigated', { period, direction: 'reset', is_current_period: true });
               setPeriod("month");
               setPeriodOffset(0);
             }}
@@ -199,6 +212,7 @@ export default function Stats() {
           <Pressable
             onPress={() => {
               setSelectedDay(null);
+              track('stats_period_navigated', { period, direction: 'previous', is_current_period: periodOffset - 1 === 0 });
               setPeriodOffset((current) => current - 1);
             }}
             accessibilityRole="button"
@@ -213,6 +227,8 @@ export default function Stats() {
           <Pressable
             onPress={() => {
               setSelectedDay(null);
+              if (isCurrentPeriod) return;
+              track('stats_period_navigated', { period, direction: 'next', is_current_period: periodOffset + 1 === 0 });
               setPeriodOffset((current) => current + 1);
             }}
             disabled={isCurrentPeriod}
@@ -228,7 +244,7 @@ export default function Stats() {
         </View>
       </View>
       <Pressable
-        onPress={() => setSelectedDay(null)}
+        onPress={() => { if (activeSelectedDay) track('stats_overview_selected', { period }); setSelectedDay(null); }}
         accessibilityRole="button"
         accessibilityLabel={copy.total}
         style={[styles.totalCard, !activeSelectedDay && styles.totalCardActive]}
@@ -247,7 +263,7 @@ export default function Stats() {
             locale={locale}
             today={todayKey(timer.now)}
             todayLabel={copy.today}
-            onSelect={setSelectedDay}
+            onSelect={selectDay}
           />
         ) : (
           <MonthCalendar
@@ -256,7 +272,7 @@ export default function Stats() {
             leadingBlanks={monthLeadingBlanks}
             selectedDay={activeSelectedDay}
             locale={locale}
-            onSelect={setSelectedDay}
+            onSelect={selectDay}
           />
         )}
       </View>
@@ -275,13 +291,14 @@ export default function Stats() {
             return (
               <View key={tag.id} style={styles.tagStatRow}>
                 <Pressable
-                  onPress={() =>
+                  onPress={() => {
+                    if (!expanded) track('stats_category_expanded', { period, scope: activeSelectedDay ? 'selected_day' : 'period', category_kind: tag.id.startsWith('custom-') ? 'custom' : 'built_in', task_count: tasks.filter(task => detailDays.includes(task.day) && task.tagId === tag.id).length });
                     setExpandedTagIds((current) =>
                       current.includes(tag.id)
                         ? current.filter((id) => id !== tag.id)
                         : [...current, tag.id],
-                    )
-                  }
+                    );
+                  }}
                   accessibilityRole="button"
                   accessibilityState={{ expanded }}
                   accessibilityLabel={`${getTaskTagLabel(tag, locale)} ${formatShortTime(value, locale)}`}

@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { reminderTimeOfDay, track } from '../src/services/analytics';
 import {
   Animated,
   Alert,
@@ -46,6 +47,7 @@ const reminderMinutes = Array.from({ length: 12 }, (_, index) => index * 5);
 const wheelItemHeight = 44;
 
 export default function Settings() {
+  useFocusEffect(useCallback(() => { track('settings_viewed'); }, []));
   const router = useRouter();
   const timer = useTimer();
   const { locale, languageMode, setLanguageMode, t } = useI18n();
@@ -153,9 +155,12 @@ export default function Settings() {
     }
   };
   const save = () => {
-    if (!name.trim()) return;
+    if (!timer.ready || !name.trim()) return;
     if (editing) timer.updateCategory(editing.id, name, iconUri, systemIconId);
     else timer.addCategory(name, iconUri, systemIconId);
+    const originalSystemIconId = editing?.systemIconId ?? (systemIconChoices.some(icon => icon.id === editing?.id) ? editing?.id : undefined);
+    const changed = !editing || getTaskTagLabel(editing, locale) !== name.trim().slice(0, 12) || editing.iconUri !== iconUri || originalSystemIconId !== systemIconId;
+    if (changed) track(editing ? 'category_updated' : 'category_created', { icon_source: iconUri ? 'photo' : systemIconId ? 'built_in' : 'default' });
     returnToCategoryList();
   };
   const confirmDelete = (category: TaskTag) => {
@@ -173,7 +178,9 @@ export default function Settings() {
           text: t("common.delete"),
           style: "destructive",
           onPress: () => {
+            if (!timer.ready || category.id === uncategorizedTagId || !timer.categories.some(item => item.id === category.id)) return;
             timer.deleteCategory(category.id);
+            track('category_deleted', { category_kind: category.id.startsWith('custom-') ? 'custom' : 'built_in', has_tasks: count > 0 });
             returnToCategoryList();
           },
         },
@@ -187,16 +194,27 @@ export default function Settings() {
       )
       .catch(() => undefined);
   }, []);
+  const saveReminderSettings = (next: typeof timer.reminders) => {
+    if (!timer.ready) return;
+    const old = timer.reminders;
+    timer.setReminders(next);
+    if (next.startEnabled !== old.startEnabled) track('reminder_setting_changed', { setting: 'start_enabled', enabled: next.startEnabled });
+    if (next.longEnabled !== old.longEnabled) track('reminder_setting_changed', { setting: 'long_enabled', enabled: next.longEnabled });
+    if (next.startFrequency !== old.startFrequency) track('reminder_setting_changed', { setting: 'frequency', frequency: next.startFrequency });
+    if (next.startHour !== old.startHour || next.startMinute !== old.startMinute) track('reminder_setting_changed', { setting: 'time', time_of_day: reminderTimeOfDay(next.startHour) });
+  };
   const changeReminder = async (
     key: "startEnabled" | "longEnabled",
     value: boolean,
   ) => {
+    if (!timer.ready || timer.reminders[key] === value) return;
     if (value) {
       const status = await requestNotificationPermission();
+      track('notification_permission_result', { granted: status.granted, can_ask_again: status.canAskAgain });
       setNotificationsDenied(!status.granted && status.canAskAgain === false);
       if (!status.granted) return;
     }
-    timer.setReminders({ ...timer.reminders, [key]: value });
+    saveReminderSettings({ ...timer.reminders, [key]: value });
   };
   const updateReminderTime = (
     part: "startHour" | "startMinute",
@@ -205,7 +223,7 @@ export default function Settings() {
     const parsed = Number(value);
     const limit = part === "startHour" ? 23 : 59;
     if (Number.isInteger(parsed) && parsed >= 0 && parsed <= limit)
-      timer.setReminders({ ...timer.reminders, [part]: parsed });
+      saveReminderSettings({ ...timer.reminders, [part]: parsed });
   };
   const openTimePicker = () => {
     setDraftReminderTime({
@@ -222,7 +240,7 @@ export default function Settings() {
     }));
   };
   const saveReminderTime = () => {
-    timer.setReminders({
+    saveReminderSettings({
       ...timer.reminders,
       startHour: draftReminderTime.hour,
       startMinute: draftReminderTime.minute,
@@ -233,6 +251,7 @@ export default function Settings() {
   const preview = iconUri ? { uri: iconUri } : getSystemIconImage(systemIconId);
   const languageCopy = languageSettingsCopy(locale);
   const chooseLanguage = (mode: LanguageMode) => {
+    if (mode !== languageMode) track('language_changed', { language_mode: mode });
     setLanguageMode(mode);
     setLanguageVisible(false);
   };
@@ -291,14 +310,14 @@ export default function Settings() {
                 <Text style={styles.detailLabel}>{t("reminders.days")}</Text>
                 <View style={styles.segment}>
                   <Pressable
-                    onPress={() => timer.setReminders({ ...timer.reminders, startFrequency: "weekdays" })}
+                    onPress={() => saveReminderSettings({ ...timer.reminders, startFrequency: "weekdays" })}
                     style={[styles.segmentButton, timer.reminders.startFrequency === "weekdays" && styles.segmentSelected]}
                   >
                     <Text style={styles.segmentText}>{t("reminders.weekdays")}</Text>
                     {timer.reminders.startFrequency === "weekdays" ? <Ionicons name="checkmark" size={16} color="#1F7A70" /> : null}
                   </Pressable>
                   <Pressable
-                    onPress={() => timer.setReminders({ ...timer.reminders, startFrequency: "daily" })}
+                    onPress={() => saveReminderSettings({ ...timer.reminders, startFrequency: "daily" })}
                     style={[styles.segmentButton, timer.reminders.startFrequency === "daily" && styles.segmentSelected]}
                   >
                     <Text style={styles.segmentText}>{t("reminders.daily")}</Text>
