@@ -19,6 +19,13 @@ ios/
 .env.*
 !.env.example
 GoogleService-Info.plist
+GoogleService-Info*.plist
+google-services.json
+
+# Service-account credentials
+*firebase-adminsdk*.json
+service-account*.json
+service_account*.json
 
 # Local product planning notes
 产品文档.txt
@@ -31,6 +38,11 @@ docs/ios-发布指南.md
 *.mobileprovision
 *.p12
 *.p8
+*.pfx
+*.pem
+*.key
+*.keystore
+*.jks
 
 # Logs
 npm-debug.log*

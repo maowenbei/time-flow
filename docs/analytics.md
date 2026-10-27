@@ -22,7 +22,7 @@ Firebase 自身仍会收集基础设备、会话和应用信息；“匿名”�
 5. 在本地环境变量已设置、云端文件变量也已配置后构建和启动：
 
    ```powershell
-   npx eas-cli build --platform ios --profile development
+   eas build --platform ios --profile development
    npx expo start --dev-client --port 8085
    ```
 

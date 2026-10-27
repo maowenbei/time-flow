@@ -42,8 +42,8 @@ iPad 时长编辑使用应用内底部数字面板，仅提供 0–9、退格和
 如设备尚未注册，先运行以下命令并按提示在 iPad / iPhone 完成注册：
 
 ```powershell
-npx eas-cli@latest device:create
-npx eas-cli@latest build --platform ios --profile development
+eas device:create
+eas build --platform ios --profile development
 ```
 
 在两台设备上安装构建页面提供的开发包，按提示开启开发者模式。安装后，电脑与设备连接同一网络：
@@ -98,8 +98,8 @@ npx expo start --dev-client --port 8085
 人工确认开发包后，再生成 production 构建并通过 TestFlight 验收：
 
 ```powershell
-npx eas-cli@latest build --platform ios --profile production
-npx eas-cli@latest submit --platform ios --latest
+eas build --platform ios --profile production
+eas submit --platform ios --profile production --latest
 ```
 
 确认提交的构建号，待 App Store Connect 处理完成并配置测试资格后，在两台设备安装 TestFlight 包，复验启动、计时、后台、通知及弹窗。补齐 iPad 商店截图并完成验收记录后，再更新 README 的发布支持范围和提交正式发布。
