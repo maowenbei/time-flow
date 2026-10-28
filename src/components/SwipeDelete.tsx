@@ -21,7 +21,7 @@ export function SwipeDelete({ actionVariant = 'regular', children, cornerRadius 
   const compact = actionVariant === 'compact';
   const actions = () => <View style={[styles.rail, { borderTopRightRadius: cornerRadius, borderBottomRightRadius: cornerRadius }]}><Pressable onPress={deleteTask} accessibilityRole="button" accessibilityLabel={label} style={styles.action}><Ionicons name="trash-outline" size={compact ? 17 : 20} color="#BD514D" /><Text style={[styles.label, compact ? styles.labelCompact : styles.labelRegular]}>{label}</Text></Pressable></View>;
 
-  return <ReanimatedSwipeable ref={swipeable} enabled={enabled} renderRightActions={actions} rightThreshold={DELETE_WIDTH / 2} dragOffsetFromRightEdge={8} friction={1.8} overshootRight={false} containerStyle={[styles.shell, { borderRadius: cornerRadius }]}>{children}</ReanimatedSwipeable>;
+  return <ReanimatedSwipeable ref={swipeable} enabled={enabled} renderRightActions={actions} rightThreshold={DELETE_WIDTH / 2} dragOffsetFromRight={-8} friction={1.8} overshootRight={false} containerStyle={[styles.shell, { borderRadius: cornerRadius }]}>{children}</ReanimatedSwipeable>;
 }
 
 const styles = StyleSheet.create({

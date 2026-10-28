@@ -9,7 +9,7 @@ const icons: Record<string, keyof typeof Ionicons.glyphMap> = { today: 'time-out
 export default function TabsLayout() {
   const layout = useAdaptiveLayout();
   const { t } = useI18n();
-  return <Tabs screenOptions={({ route }) => ({ headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.textMuted, ...(layout.isPad ? { tabBarLabelPosition: 'below-icon' as const } : {}), tabBarStyle: { height: layout.isPad ? 56 + layout.insets.bottom : 76, paddingTop: 8, backgroundColor: '#FFFFFF', borderTopColor: border.subtle, ...(layout.isPad ? { paddingBottom: layout.insets.bottom } : {}) }, tabBarLabelStyle: typography.tab, tabBarIcon: ({ color, size }) => <Ionicons name={icons[route.name]} color={color} size={size} /> })}>
+  return <Tabs screenOptions={({ route }) => ({ headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.textMuted, ...(layout.isPad ? { tabBarLabelPosition: 'below-icon' as const } : {}), tabBarStyle: { height: layout.isPad ? 56 + layout.insets.bottom : 76, paddingTop: 8, backgroundColor: '#FFFFFF', borderTopColor: border.subtle, ...(layout.isPad ? { paddingBottom: layout.insets.bottom } : {}) }, tabBarLabelStyle: typography.tab, tabBarIcon: ({ focused, size }) => <Ionicons name={icons[route.name]} color={focused ? colors.primary : colors.textMuted} size={size} /> })}>
     <Tabs.Screen name="today" options={{ title: t('tabs.today') }} /><Tabs.Screen name="history" options={{ title: t('tabs.history') }} /><Tabs.Screen name="stats" options={{ title: t('tabs.stats') }} />
   </Tabs>;
 }

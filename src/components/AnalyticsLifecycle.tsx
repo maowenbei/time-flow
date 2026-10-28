@@ -11,7 +11,7 @@ export function AnalyticsLifecycle() {
   const { locale } = useI18n();
   useEffect(() => { setAnalyticsLocale(locale); }, [locale]);
   useEffect(() => {
-    const onState = (state: string) => {
+    const onState = (state: typeof AppState.currentState) => {
       if (state === 'background') wasBackgrounded = true;
       if (state !== 'active') return;
       if (!opened) {

@@ -6,7 +6,7 @@ import { TodayLayout } from '../../src/components/adaptive/TodayLayout';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, Keyboard, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Keyboard, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View, type TextInputInstance } from 'react-native';
 import { TaskCard } from '../../src/components/TaskCard';
 import { DismissibleHint } from '../../src/components/DismissibleHint';
 import { TaskTagIcon } from '../../src/components/TaskTagIcon';
@@ -22,7 +22,7 @@ const orderTasks = (tasks: Task[]) => [...tasks].sort((a, b) => a.sortOrder - b.
 
 export default function Today() {
   const layout = useAdaptiveLayout();
-  const addInputRef = useRef<TextInput>(null);
+  const addInputRef = useRef<TextInputInstance>(null);
   useFocusEffect(useCallback(() => () => {
     // A mounted tab must not leave its text field as a native first responder.
     if (layout.isPad) addInputRef.current?.blur();

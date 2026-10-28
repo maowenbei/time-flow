@@ -4,9 +4,7 @@
 
 [Visit website](https://www.muzhistudy.com/threadflow/index.html)
 
-> The current release is an **iOS app** for iPhone. Android and web commands below are for development and preview only.
-
-iPad adaptive layouts are implemented in source, pending device and TestFlight acceptance. See the [iPad compatibility checklist](docs/ipad-compatibility.md) for installation and manual validation steps (Chinese).
+> The current release is an **iOS app** for iPhone.
 
 ## Download
 
@@ -22,14 +20,10 @@ iPad adaptive layouts are implemented in source, pending device and TestFlight a
 
 ThreadFlow is a lightweight work timer for the way real work happens. Run multiple task timers at once without double-counting overlapping time. Track what you worked on and how much time you actually spent—without forced Pomodoro sessions or heavyweight project management.
 
-## What’s new in v1.1
-
-- **Live Activities & Dynamic Island:** View active timer status from the Lock Screen, Live Activities, and, on supported devices, the Dynamic Island.
-- **Lightweight reminders:** Set a daily reminder to start tracking. Long-running timers can also remind you to check their status or take a break.
-- Improved editing of history times and task states, category drill-down in statistics, localization, and interface details; fixed timing and state-sync issues.
-
 ## Core features
 
+- Live Activities and Dynamic Island for active timers on supported devices
+- Daily start reminders and long-running timer reminders
 - Quickly create, start, pause, resume, complete, and edit tasks
 - Run multiple task timers at once while ensuring allocated time never exceeds real elapsed time
 - See both timer duration and actual allocated work time
@@ -42,41 +36,9 @@ ThreadFlow is a lightweight work timer for the way real work happens. Run multip
 
 Submit bugs, feature requests, or other feedback through [GitHub Issues](https://github.com/maowenbei/time-flow/issues), or browse the [existing issues](https://github.com/maowenbei/time-flow/issues).
 
-## Tech stack
+## Development and installation
 
-React Native, Expo, Expo Router, and TypeScript.
-
-Firebase Analytics setup, events, and Development Build verification: [Analytics guide](docs/analytics.md).
-
-## Getting started
-
-Requirements: Node.js 20 LTS or later. Android Studio or Xcode is also needed to run on a native simulator or device.
-
-```powershell
-npm install
-npm start
-```
-
-Common commands:
-
-```powershell
-npm run android
-npm run ios
-npm run web
-npm run typecheck
-```
-
-### Preview on iPhone with Expo Go
-
-When the project SDK is compatible with the Expo Go version installed on your iPhone, run `npm start` in the project root and scan the QR code shown in the terminal. Your phone and computer must be on the same network. If that does not work, run `npx expo start --tunnel` and scan again.
-
-This project uses Expo SDK 57, while the App Store release of iOS Expo Go currently supports only SDK 54. For on-device preview, use a Development Build or TestFlight. You can download a compatible Expo Go version from https://sign.expo.dev/.
-
-## Timing rules
-
-ThreadFlow settles the preceding interval using timestamps whenever a task changes state, rather than using `setInterval` as its timing data source. This means timers can recover from their previous state even when the app goes into the background, the phone is locked, or the app is reopened.
-
-For example: A starts at 10:00, B starts at 10:20, B completes at 10:50, and A completes at 11:00. A receives 45 minutes and B receives 15 minutes, for a total of the actual 60 minutes elapsed. Milliseconds that cannot be divided evenly are allocated in a stable order so no time is lost.
+[Development and builds](docs/ios-发布指南.md) (Chinese): Expo Go testing, native debug builds, and production builds for TestFlight.
 
 ## Privacy
 

@@ -30,8 +30,7 @@ service_account*.json
 # Local product planning notes
 产品文档.txt
 
-# Local iOS packaging and release notes
-docs/ios-发布指南.md
+# Local release history
 提审历史/
 .easignore
 .eas/
